@@ -1,0 +1,48 @@
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Development files
+node_modules/
+.env
+.env.local
+
+# Exclude unnecessary files from workspace
+additional.md
+assetList.json
+duplicateIssue.html
+form-redirect.js
+landingpageExtraction.json
+list-cloudpages-ssjs.html
+list-cloudpages.html
+PUBLISH_FIX_SUMMARY.md
+retreiveAllCloudPages.md
+SFMC_CloudPages_Assets_Manager_EXPORT.md
+Tampermoney_Final_Script.txt
+test-api.html
+TODO_DETAILED.md
+
+# Exclude debug/test scripts
+debug_*.user.js
+tampermonkey_cloudpages_allinone.user.js
+tampermonkey_cloudpages_manager.user.js
+tampermonkey_cloudpages_optimized.user.js
+tampermonkey_publish_debug_enhanced.user.js
+tampermonkey_unpublish.js
+tampermonkey_unpublish.user.js
+
+# Keep only production versions
+# Include: Chrome_Extension/, Final_Version/, README.md, LICENSE

@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "CloudPage Maestro",
+  "version": "5.0.0",
+  "description": "Advanced management tool for Salesforce Marketing Cloud CloudPages and Code Resources",
+  "author": "Aldorino Rrushi",
+  
+  "icons": {
+    "16": "icons/icon-16.svg",
+    "48": "icons/icon-48.svg",
+    "128": "icons/icon-128.svg"
+  },
+
+  "permissions": [
+    "storage",
+    "webRequest"
+  ],
+
+  "host_permissions": [
+    "https://*.marketingcloudapps.com/*",
+    "https://*.exacttarget.com/*",
+    "https://*.sfmc-content.com/*"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.exacttarget.com/*",
+        "https://*.marketingcloudapps.com/*"
+      ],
+      "js": ["content_full.js"],
+      "run_at": "document_end"
+    }
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  }
+}
