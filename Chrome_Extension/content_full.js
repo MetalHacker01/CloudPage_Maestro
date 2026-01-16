@@ -553,9 +553,9 @@ function createMainUI(pageHookToken, appcoreToken) {
     panel.innerHTML = `
         <div class="cpm-header">
             <div class="cpm-header-left">
-                <div class="cpm-logo">
-                    <img src="${chrome.runtime.getURL('CP_Maestro_Logo.png')}" alt="CloudPage Maestro" style="height: 32px; width: auto;">
-                    <span style="font-weight: 600; margin-left: 8px; font-size: 16px;">CloudPage Maestro</span>
+                <div class="cpm-logo" style="display: flex; justify-content: center; align-items: center;">
+                    <img src="${chrome.runtime.getURL('CP_Maestro_Logo.png')}" alt="CloudPage Maestro" style="height: 130px; width: auto;">
+                    <span style="font-weight: 600; margin-left: 8px; font-size: 20px;">CloudPage Maestro</span>
                 </div>
             </div>
             <div class="cpm-header-actions">
@@ -738,7 +738,7 @@ function addStyles() {
         .cpm-header {
             background: #0176d3;
             color: #ffffff;
-            padding: 20px 30px;
+            padding: 0px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
