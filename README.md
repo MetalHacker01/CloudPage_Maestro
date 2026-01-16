@@ -1,8 +1,10 @@
 # CloudPage Maestro v5.0
 
 <p align="center">
-  <img src="https://i.postimg.cc/TYgXhFJJ/output-onlinepngtools-(4).png" alt="CloudPage Maestro" width="300">
+  <img src="CP_Maestro_Logo.png" alt="CloudPage Maestro Logo" width="200">
 </p>
+
+<h1 align="center">CloudPage Maestro</h1>
 
 <p align="center">
   <strong>Advanced Salesforce Marketing Cloud (SFMC) CloudPages Management Tool</strong>

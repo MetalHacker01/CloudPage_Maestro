@@ -2919,7 +2919,8 @@
             <div class="cpm-header">
                 <div class="cpm-header-left">
                     <div class="cpm-logo">
-                        <img src="https://i.postimg.cc/TYgXhFJJ/output-onlinepngtools-(4).png" alt="Salesforce Logo">
+                        <img src="https://i.postimg.cc/TYgXhFJJ/output-onlinepngtools-(4).png" alt="CloudPage Maestro Logo">
+                        <span style="font-weight: 600; margin-left: 8px; font-size: 16px;">CloudPage Maestro</span>
                     </div>
                 
                 </div>

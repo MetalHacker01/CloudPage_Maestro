@@ -44,5 +44,24 @@ tampermonkey_publish_debug_enhanced.user.js
 tampermonkey_unpublish.js
 tampermonkey_unpublish.user.js
 
+# Exclude development documentation and test folders
+Final_Version/API_ACTIONS_DOCUMENTATION.md
+Final_Version/DOCUMENTATION.html
+Final_Version/ENRICHMENT_API_GUIDE.md
+Final_Version/Kimi_Optimization_Guide.md
+Final_Version/LOGO_DESIGN_BRIEF.md
+Final_Version/PROJECT_DOCUMENTATION.md
+Final_Version/SFMC_UI_Query_Scheme.md
+Final_Version/download_landing_page_html.user.js
+Final_Version/final_code.txt
+Final_Version/original_product_documentation.md
+Final_Version/recommendations_qwen.md
+Final_Version/tampermonkey_cloudpages_allinone_enhanced.user.js
+Final_Version/tampermonkey_cloudpages_allinone_original.user.js
+Firefox_Extension/
+kiro/
+versions/
+
 # Keep only production versions
-# Include: Chrome_Extension/, Final_Version/, README.md, LICENSE
+# Include: Chrome_Extension/, Final_Version/tampermonkey_cloudpages_optimized_v5.user.js, 
+# Final_Version/DOCUMENTATION_NEW.html, Final_Version/*.png, README.md, LICENSE
