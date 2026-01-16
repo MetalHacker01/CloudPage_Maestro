@@ -566,7 +566,7 @@ function createMainUI(pageHookToken, appcoreToken) {
         <div class="cpm-header">
             <div class="cpm-header-left">
                 <div class="cpm-logo" style="display: flex; justify-content: center; align-items: center;">
-                    <img src="${chrome.runtime.getURL('CP_Maestro_Logo.png')}" alt="CloudPage Maestro" style="height: 130px; width: auto;">
+                    <img src="https://i.imgur.com/A6bV4BF.png" alt="CloudPage Maestro" style="height: 130px; width: auto;">
                     <span style="font-weight: 600; margin-left: 8px; font-size: 20px;">CloudPage Maestro</span>
                 </div>
             </div>

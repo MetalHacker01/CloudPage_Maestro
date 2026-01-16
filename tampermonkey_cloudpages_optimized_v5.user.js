@@ -2919,7 +2919,7 @@
             <div class="cpm-header">
                 <div class="cpm-header-left">
                     <div class="cpm-logo">
-                        <img src="https://metalhacker01.github.io/CloudPage_Maestro/CP_Maestro_Logo.png" alt="CloudPage Maestro Logo">
+                        <img src="https://i.imgur.com/A6bV4BF.png" alt="CloudPage Maestro Logo">
                         <span style="font-weight: 600; margin-left: 8px; font-size: 16px;">CloudPage Maestro</span>
                     </div>
                 
