@@ -6,9 +6,9 @@
   "author": "Aldorino Rrushi",
   
   "icons": {
-    "16": "icons/icon-28.ico",
-    "48": "icons/icon-48.ico",
-    "128": "icons/icon-128.ico"
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   },
 
   "permissions": [

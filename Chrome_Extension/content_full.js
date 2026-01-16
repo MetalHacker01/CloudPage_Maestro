@@ -267,6 +267,18 @@ console.log('══════════════════════�
     async function initializeCloudPageMaestro() {
         console.log('[CloudPage Maestro] Getting tokens from background...');
 
+        // Check if chrome.runtime is available (extension context)
+        if (!chrome.runtime || !chrome.runtime.sendMessage) {
+            console.error('[CloudPage Maestro] Chrome runtime not available');
+            // Fallback: capture tokens from DOM directly
+            const tokens = captureTokensFromDOM();
+            if (tokens.pageHookToken || tokens.appcoreToken) {
+                console.log('[CloudPage Maestro] Using tokens from DOM');
+                createMainUI(tokens.pageHookToken, tokens.appcoreToken);
+            }
+            return;
+        }
+
         chrome.runtime.sendMessage({ type: 'GET_TOKENS' }, (response) => {
             if (!response || !response.success) {
                 console.warn('[CloudPage Maestro] Failed to get tokens from background');
