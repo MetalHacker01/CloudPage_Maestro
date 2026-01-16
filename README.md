@@ -17,38 +17,38 @@
 
 ---
 
-## 🎯 Overview
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/target.svg" width="20" height="20"> Overview
 
 CloudPage Maestro is a powerful tool for managing Salesforce Marketing Cloud CloudPages with enhanced UI, real-time asset enrichment, batch operations, and complete download capabilities.
 
 ### Available Versions
 
-- **🔧 Tampermonkey Script** - Universal userscript for all browsers
-- **🚀 Chrome Extension** - Enhanced version with batch operations and folder management
+- **<img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/settings.svg" width="16" height="16"> Tampermonkey Script** - Universal userscript for all browsers
+- **<img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/rocket.svg" width="16" height="16"> Chrome Extension** - Enhanced version with batch operations and folder management
 
 ---
 
-## ✨ Features
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/star.svg" width="20" height="20"> Features
 
 ### Core Features (Both Versions)
-- ✅ **Dual-Token System** - Automatic authentication token capture and management
-- ✅ **Asset Management** - View, search, and manage CloudPages and Code Resources
-- ✅ **Download System** - Download HTML from landing pages and content from code resources
-- ✅ **Real-time Enrichment** - Fetch asset details, status, and site information on-demand
-- ✅ **Unpublish Operations** - Safely unpublish landing pages with confirmation
-- ✅ **Smart Caching** - Local caching with time-based expiration (15 minutes)
-- ✅ **Advanced UI** - Icons, tooltips, and bouncing download animations
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/check-circle.svg" width="16" height="16"> **Dual-Token System** - Automatic authentication token capture and management
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/check-circle.svg" width="16" height="16"> **Asset Management** - View, search, and manage CloudPages and Code Resources
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/check-circle.svg" width="16" height="16"> **Download System** - Download HTML from landing pages and content from code resources
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/check-circle.svg" width="16" height="16"> **Real-time Enrichment** - Fetch asset details, status, and site information on-demand
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/check-circle.svg" width="16" height="16"> **Unpublish Operations** - Safely unpublish landing pages with confirmation
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/check-circle.svg" width="16" height="16"> **Smart Caching** - Local caching with time-based expiration (15 minutes)
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/check-circle.svg" width="16" height="16"> **Advanced UI** - Icons, tooltips, and bouncing download animations
 
 ### Chrome Extension Exclusive Features
-- ⚡ **Batch Operations** - Select multiple assets for bulk publish/unpublish/move
-- 📁 **Folder Management** - Visual folder tree picker with search (fetches ALL folders via pagination)
-- 🔍 **Enhanced Search** - Filter folders across entire SFMC instance
-- 🐛 **Debug Mode** - Production-ready logging with `DEBUG_MODE` flag
-- 🔄 **CORS Bypass** - Background script architecture for API calls
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/flash.svg" width="16" height="16"> **Batch Operations** - Select multiple assets for bulk publish/unpublish/move
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/folder.svg" width="16" height="16"> **Folder Management** - Visual folder tree picker with search (fetches ALL folders via pagination)
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/search.svg" width="16" height="16"> **Enhanced Search** - Filter folders across entire SFMC instance
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/code.svg" width="16" height="16"> **Debug Mode** - Production-ready logging with `DEBUG_MODE` flag
+- <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/refresh-double.svg" width="16" height="16"> **CORS Bypass** - Background script architecture for API calls
 
 ---
 
-## 📦 Installation
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/download-circle.svg" width="20" height="20"> Installation
 
 ### Tampermonkey Script
 
@@ -61,7 +61,7 @@ CloudPage Maestro is a powerful tool for managing Salesforce Marketing Cloud Clo
 
 ### Chrome Extension
 
-> **⚠️ Developer Mode Required** - Chrome Web Store release coming soon
+> **<img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/warning-triangle.svg" width="16" height="16"> Developer Mode Required** - Chrome Web Store release coming soon
 
 1. Download the [`Chrome_Extension/`](Chrome_Extension/) folder
 2. Open Chrome and navigate to `chrome://extensions/`
@@ -72,11 +72,11 @@ CloudPage Maestro is a powerful tool for managing Salesforce Marketing Cloud Clo
 
 ---
 
-## 📖 Documentation
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/book.svg" width="20" height="20"> Documentation
 
 Comprehensive documentation available with interactive version toggle:
 
-👉 **[View Documentation](Final_Version/DOCUMENTATION_NEW.html)** (Download and open in browser)
+<img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/arrow-right.svg" width="16" height="16"> **[View Documentation](Final_Version/DOCUMENTATION_NEW.html)** (Download and open in browser)
 
 The documentation includes:
 - Installation guides for both versions
@@ -88,7 +88,7 @@ The documentation includes:
 
 ---
 
-## 🗂️ Repository Structure
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/folder-solid.svg" width="20" height="20"> Repository Structure
 
 ```
 CloudPage_Maestro/
@@ -107,7 +107,7 @@ CloudPage_Maestro/
 
 ---
 
-## 🚀 Quick Start
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/rocket.svg" width="20" height="20"> Quick Start
 
 ### Tampermonkey
 ```bash
@@ -127,7 +127,7 @@ git clone https://github.com/MetalHacker01/CloudPage_Maestro.git
 
 ---
 
-## 🔧 Technical Details
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/settings.svg" width="20" height="20"> Technical Details
 
 ### Tampermonkey Script
 - **Version**: 5.0
@@ -143,7 +143,7 @@ git clone https://github.com/MetalHacker01/CloudPage_Maestro.git
 
 ---
 
-## 🛠️ Development
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/tools.svg" width="20" height="20"> Development
 
 ### Debug Mode (Chrome Extension Only)
 
@@ -156,7 +156,7 @@ Enable detailed logging for troubleshooting:
 
 ---
 
-## ⚠️ Limitations
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/warning-triangle.svg" width="20" height="20"> Limitations
 
 - Requires active SFMC session (tokens expire with session)
 - SFMC API rate limits apply
@@ -165,13 +165,13 @@ Enable detailed logging for troubleshooting:
 
 ---
 
-## 📝 License
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/page.svg" width="20" height="20"> License
 
 This is an unofficial community tool, not supported by Salesforce.
 
 ---
 
-## 🙏 Credits
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/user.svg" width="20" height="20"> Credits
 
 **Developer**: MetalHacker01  
 **Version**: 5.0  
@@ -179,10 +179,10 @@ This is an unofficial community tool, not supported by Salesforce.
 
 ---
 
-## 🐛 Issues & Support
+## <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/bug.svg" width="20" height="20"> Issues & Support
 
 For bug reports or feature requests, please open an issue on GitHub.
 
 ---
 
-<p align="center">Made with ❤️ for the SFMC Community</p>
+<p align="center">Made with <img src="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/icons/heart-solid.svg" width="16" height="16"> for the SFMC Community</p>
