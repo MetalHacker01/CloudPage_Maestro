@@ -45,10 +45,10 @@ tampermonkey_unpublish.js
 tampermonkey_unpublish.user.js
 
 # Exclude development documentation and test folders
-Final_Version/*
-!Final_Version/tampermonkey_cloudpages_optimized_v5.user.js
-!Final_Version/DOCUMENTATION_NEW.html
-!Final_Version/CP_Maestro_Logo.png
+Final_Version/
+Firefox_Extension/
+kiro/
+versions/
 Final_Version/Kimi_Optimization_Guide.md
 Final_Version/LOGO_DESIGN_BRIEF.md
 Final_Version/PROJECT_DOCUMENTATION.md
