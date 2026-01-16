@@ -35,5 +35,15 @@
 
   "background": {
     "service_worker": "background.js"
-  }
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["CP_Maestro_Logo.png"],
+      "matches": [
+        "https://*.exacttarget.com/*",
+        "https://*.marketingcloudapps.com/*"
+      ]
+    }
+  ]
 }
