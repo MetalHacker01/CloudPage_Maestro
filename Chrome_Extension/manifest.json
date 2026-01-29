@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "CloudPage Maestro",
-  "version": "5.0.0",
-  "description": "Advanced management tool for Salesforce Marketing Cloud CloudPages and Code Resources",
+  "name": "CloudPage Maestro (v6)",
+  "version": "6.0.0",
+  "description": "CloudPage Maestro v6 - Refactored with fixes and optimizations (Cursor package)",
   "author": "Aldorino Rrushi",
-  
+
   "icons": {
     "16": "icons/icon-16.png",
     "48": "icons/icon-48.png",
@@ -17,7 +17,7 @@
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     },
-    "default_title": "CloudPage Maestro"
+    "default_title": "CloudPage Maestro v6"
   },
 
   "permissions": [
@@ -37,7 +37,7 @@
         "https://*.exacttarget.com/*",
         "https://*.marketingcloudapps.com/*"
       ],
-      "js": ["content_full.js"],
+      "js": ["content_v6.js"],
       "run_at": "document_end"
     }
   ],
@@ -48,7 +48,7 @@
 
   "web_accessible_resources": [
     {
-      "resources": ["CP_Maestro_Logo.png"],
+      "resources": ["icons/icon-48.png", "icons/CP_Maestro_Logo.png", "icons/CP_Maestro_Logo_Colored.png"],
       "matches": [
         "https://*.exacttarget.com/*",
         "https://*.marketingcloudapps.com/*"

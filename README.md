@@ -1,4 +1,4 @@
-# CloudPage Maestro v5.0
+# CloudPage Maestro v6.0
 
 <p align="center">
   <img src="CP_Maestro_Logo.png" alt="CloudPage Maestro Logo" width="200">
@@ -25,165 +25,148 @@ CloudPage Maestro is a powerful tool for managing Salesforce Marketing Cloud Clo
 
 ### Available Versions
 
-- **Tampermonkey Script** - Universal userscript for all browsers
-- **Chrome Extension** - Enhanced version with batch operations and folder management
+- **Chrome Extension (v6)** – Recommended: batch operations, search, folder move, token badges, pagination, export
+- **Tampermonkey Script** – Universal userscript for all browsers
 
 ---
 
 ## ✨ Features
 
 ### Core Features (Both Versions)
-- **Dual-Token System** - Automatic authentication token capture and management
-- **Asset Management** - View, search, and manage CloudPages and Code Resources
-- **Download System** - Download HTML from landing pages and content from code resources
-- **Real-time Enrichment** - Fetch asset details, status, and site information on-demand
-- **Unpublish Operations** - Safely unpublish landing pages with confirmation
-- **Smart Caching** - Local caching with time-based expiration (15 minutes)
-- **Advanced UI** - Icons, tooltips, and bouncing download animations
+- **Dual-Token System** – Automatic authentication token capture and management
+- **Asset Management** – View, search, and manage CloudPages and Code Resources
+- **Download System** – Download HTML from landing pages and content from code resources
+- **Real-time Enrichment** – Fetch asset details, status, and site information on-demand
+- **Unpublish Operations** – Safely unpublish landing pages with confirmation
+- **Smart Caching** – Local caching with configurable TTL (e.g. 5 minutes)
+- **SLDS-Aligned UI** – Clean, modern, Salesforce Lightning–style design
 
-### Chrome Extension Exclusive Features
-- **Batch Operations** - Select multiple assets for bulk publish/unpublish/move
-- **Folder Management** - Visual folder tree picker with search (fetches ALL folders via pagination)
-- **Enhanced Search** - Filter folders across entire SFMC instance
-- **Debug Mode** - Production-ready logging with `DEBUG_MODE` flag
-- **CORS Bypass** - Background script architecture for API calls
+### Chrome Extension (v6) Features
+- **Batch Operations** – Select multiple assets for bulk publish/unpublish/move
+- **Folder Management** – Visual folder tree picker with search
+- **Enhanced Search** – Content Builder query API with pagination
+- **Token Badges** – Live “Search Ready” / “Publish Ready” status
+- **Pagination** – Load one page at a time for fast startup
+- **Export** – Export current page to CSV (enriched status/URL)
+- **CORS Bypass** – Background script architecture for API calls
 
 ---
 
 ## 📦 Installation
 
+### Chrome Extension (v6)
+
+1. Clone or download this repository
+2. Open Chrome and go to `chrome://extensions/`
+3. Enable **Developer mode** (toggle top-right)
+4. Click **Load unpacked**
+5. Select the `Chrome_Extension/` folder
+6. Navigate to SFMC (exacttarget.com or marketingcloudapps.com) – extension auto-activates
+
 ### Tampermonkey Script
 
-1. Install [Tampermonkey](https://www.tampermonkey.net/) browser extension
-2. Open Tampermonkey dashboard
-3. Click "Create a new script"
-4. Copy contents from [`Final_Version/tampermonkey_cloudpages_optimized_v5.user.js`](Final_Version/tampermonkey_cloudpages_optimized_v5.user.js)
-5. Save the script (Ctrl+S)
-6. Navigate to SFMC CloudPages - script auto-activates
-
-### Chrome Extension
-
-> **⚠️ Developer Mode Required** - Chrome Web Store release coming soon
-
-1. Download the [`Chrome_Extension/`](Chrome_Extension/) folder
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" (toggle in top-right)
-4. Click "Load unpacked"
-5. Select the `Chrome_Extension/` folder
-6. Navigate to SFMC CloudPages - extension auto-activates
+1. Install [Tampermonkey](https://www.tampermonkey.net/) in your browser
+2. Open the Tampermonkey dashboard and create a new script
+3. Paste the contents of `tampermonkey_cloudpages_optimized_v5.user.js`
+4. Save and go to SFMC CloudPages – script auto-activates
 
 ---
 
 ## 📖 Documentation
 
-Comprehensive documentation available with interactive version toggle:
+**[DOCUMENTATION_V6.html](DOCUMENTATION_V6.html)** – Download and open in a browser for full v6 documentation.
 
-**[View Documentation](Final_Version/DOCUMENTATION_NEW.html)** (Download and open in browser)
-
-The documentation includes:
-- Installation guides for both versions
+Includes:
+- Installation guides for Chrome Extension and Tampermonkey
 - API endpoint references
-- Feature walkthroughs with code examples
-- Troubleshooting guides
-- Debug mode instructions
+- Feature walkthroughs and code examples
+- Troubleshooting and debug mode
 - Technical specifications
+
+**Changelog:** [cursor/CURSOR_V6_CHANGELOG.md](cursor/CURSOR_V6_CHANGELOG.md) – What’s new in v6.
 
 ---
 
 ## 🗂️ Repository Structure
 
 ```
-CloudPage_Maestro/
-├── Chrome_Extension/          # Chrome extension files
-│   ├── background.js         # Service worker for CORS bypass
-│   ├── content_full.js       # Main content script (4077 lines)
-│   ├── manifest.json         # Extension configuration
-│   └── icons/                # Extension icons
+Unpublish_LP_Script/
+├── Chrome_Extension/           # Chrome extension v6
+│   ├── background.js          # Service worker (token capture, API proxy)
+│   ├── content_v6.js          # Main content script (UI, search, batch actions)
+│   ├── manifest.json          # Extension config (v6.0.0)
+│   ├── README.md              # Extension setup
+│   └── icons/                 # Extension icons
 │
-├── Final_Version/             # Production-ready files
-│   ├── tampermonkey_cloudpages_optimized_v5.user.js  # Tampermonkey script
-│   └── DOCUMENTATION_NEW.html                         # Interactive documentation
+├── cursor/                     # v6 development notes
+│   ├── Chrome_Extension_v6/    # Mirror of Chrome_Extension (v6 source)
+│   ├── CURSOR_V6_CHANGELOG.md # Changelog
+│   └── CURSOR_V6_README.md     # v6 overview
 │
-└── README.md                  # This file
+├── DOCUMENTATION_V6.html       # Full documentation (open in browser)
+├── DOCUMENTATION_NEW.html     # Legacy doc
+├── tampermonkey_cloudpages_optimized_v5.user.js  # Tampermonkey script
+├── CP_Maestro_Logo.png        # Logo
+├── README.md                  # This file
+└── LICENSE
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### Tampermonkey
-```bash
-# 1. Install Tampermonkey extension
-# 2. Create new script and paste contents from:
-Final_Version/tampermonkey_cloudpages_optimized_v5.user.js
-```
-
 ### Chrome Extension
 ```bash
-# 1. Clone this repository
+# 1. Clone repo
 git clone https://github.com/MetalHacker01/CloudPage_Maestro.git
+cd CloudPage_Maestro   # or your repo name
 
-# 2. Load Chrome_Extension/ folder in chrome://extensions/
-# 3. Enable Developer Mode and click "Load unpacked"
+# 2. Load Chrome_Extension/ in chrome://extensions/ (Developer mode → Load unpacked)
+# 3. Open SFMC CloudPages
+```
+
+### Tampermonkey
+```bash
+# 1. Install Tampermonkey, create new script, paste tampermonkey_cloudpages_optimized_v5.user.js
+# 2. Save and open SFMC CloudPages
 ```
 
 ---
 
 ## 🔧 Technical Details
 
-### Tampermonkey Script
+### Chrome Extension (v6)
+- **Version**: 6.0.0
+- **Manifest**: 3
+- **Content script**: content_v6.js (~4,200+ lines)
+- **Permissions**: storage, webRequest; host permissions for SFMC domains
+
+### Tampermonkey
 - **Version**: 5.0
-- **Lines of Code**: ~4,020
-- **Dependencies**: None (vanilla JavaScript)
-- **APIs Used**: GM_xmlhttpRequest, GM_addStyle
-
-### Chrome Extension
-- **Manifest Version**: 3
-- **Lines of Code**: 4,077 (content_full.js)
-- **Permissions**: Host permissions for SFMC domains
-- **Architecture**: Content script + Background service worker
-
----
-
-## 🛠️ Development
-
-### Debug Mode (Chrome Extension Only)
-
-Enable detailed logging for troubleshooting:
-
-1. Open `Chrome_Extension/content_full.js`
-2. Change line ~10: `const DEBUG_MODE = false;` → `true`
-3. Reload extension
-4. Check browser console for detailed logs
+- **APIs**: GM_xmlhttpRequest, GM_addStyle
 
 ---
 
 ## ⚠️ Limitations
 
-- Requires active SFMC session (tokens expire with session)
+- Requires an active SFMC session (tokens expire with session)
 - SFMC API rate limits apply
-- Works within current Business Unit only
-- Not an official Salesforce tool - use at your own risk
+- Works within the current Business Unit only
+- Unofficial community tool – not supported by Salesforce
 
 ---
 
 ## 📄 License
 
-This is an unofficial community tool, not supported by Salesforce.
+See [LICENSE](LICENSE). Unofficial tool, use at your own risk.
 
 ---
 
 ## 👤 Credits
 
-**Developer**: MetalHacker01  
-**Version**: 5.0  
+**Developer**: Aldorino Rrushi (MetalHacker01)  
+**Version**: 6.0  
 **Last Updated**: January 2026
-
----
-
-## 🐛 Issues & Support
-
-For bug reports or feature requests, please open an issue on GitHub.
 
 ---
 

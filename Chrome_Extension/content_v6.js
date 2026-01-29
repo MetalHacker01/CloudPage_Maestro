@@ -1,5 +1,5 @@
-// Content script for CloudPage Maestro Chrome Extension - Full Version
-// Converted from Tampermonkey userscript v5.0
+// Content script for CloudPage Maestro Chrome Extension v6 (Cursor refactor)
+// Refactored from content_full.js (v5) with fixes and optimizations
 
 // ============================================
 // DEBUG MODE - Set to true to see detailed logs
@@ -13,12 +13,18 @@ const debugLog = (...args) => {
     }
 };
 
-// Replace all console.log with debugLog for production
-// Use Ctrl+H in VS Code: Find "console\.log\(" Replace "debugLog(" (Regex mode)
-// Keep console.error and console.warn as-is for critical messages
+// ============================================
+// v6 CONFIG - Centralized constants
+// ============================================
+const CPM_CONFIG = {
+    CACHE_TTL_MS: 5 * 60 * 1000,       // 5 minutes enrichment cache
+    INIT_POLL_INTERVAL_MS: 500,        // Poll every 500ms for page ready
+    INIT_MAX_WAIT_MS: 10000,           // Max 10s wait before starting
+    MAX_CONCURRENT_REQUESTS: 10
+};
 
 console.log('═══════════════════════════════════════════════════════════');
-console.log('CloudPage Maestro - Chrome Extension v5.0');
+console.log('CloudPage Maestro - Chrome Extension v6.0 (Cursor)');
 console.log('   URL:', window.location.href);
 console.log('   Debug Mode:', DEBUG_MODE ? 'ENABLED ✓' : 'DISABLED (production)');
 console.log('═══════════════════════════════════════════════════════════');
@@ -44,7 +50,7 @@ console.log('══════════════════════�
     // PERFORMANCE OPTIMIZATION: Request Queue
     // Limits concurrent API calls to prevent flooding
     // ============================================
-    const MAX_CONCURRENT_REQUESTS = 10;
+    const MAX_CONCURRENT_REQUESTS = CPM_CONFIG.MAX_CONCURRENT_REQUESTS;
     function createRequestQueue(limit) {
         const queue = [];
         let running = 0;
@@ -72,14 +78,14 @@ console.log('══════════════════════�
         }
     }
     const requestQueue = createRequestQueue(MAX_CONCURRENT_REQUESTS);
-    console.log('[CloudPage Maestro] Request queue initialized (max:', MAX_CONCURRENT_REQUESTS, 'concurrent)');
+    debugLog('[CloudPage Maestro] Request queue initialized (max:', MAX_CONCURRENT_REQUESTS, 'concurrent)');
 
     // ============================================
     // PERFORMANCE OPTIMIZATION: Enrichment Cache
     // Avoids re-fetching same asset's site details
     // ============================================
     const enrichmentCache = new Map(); // assetId -> { status, url, pageId, timestamp }
-    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache validity
+    const CACHE_TTL = CPM_CONFIG.CACHE_TTL_MS;
 
     function getCachedEnrichment(assetId) {
         const cached = enrichmentCache.get(assetId);
@@ -95,7 +101,7 @@ console.log('══════════════════════�
             timestamp: Date.now()
         });
     }
-    console.log('[CloudPage Maestro] Enrichment cache initialized (TTL:', CACHE_TTL / 1000, 'seconds)');
+    debugLog('[CloudPage Maestro] Enrichment cache initialized (TTL:', CACHE_TTL / 1000, 'seconds)');
 
     // ============================================
     // State Management
@@ -158,36 +164,36 @@ console.log('══════════════════════�
     };
 
     // ============================================
-    // DELAYED INITIALIZATION (6 seconds + page ready check)
-    // Wait for page to fully stabilize before injecting UI
+    // v6: DELAYED INITIALIZATION with polling (max wait, not fixed delay)
+    // Poll for SFMC/page ready; proceed as soon as ready or after max wait
     // ============================================
-    console.log('[CloudPage Maestro] Waiting for page to fully load...');
+    console.log('[CloudPage Maestro] Waiting for page to be ready...');
     
-    // Wait for DOM to be ready
     if (document.readyState === 'loading') {
         await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
     }
     
-    // Additional delay to ensure SFMC framework is loaded AND visible
-    console.log('[CloudPage Maestro] DOM ready, waiting 10 seconds for SFMC initialization and visibility...');
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    const deadline = Date.now() + CPM_CONFIG.INIT_MAX_WAIT_MS;
+    while (Date.now() < deadline) {
+        const sfmcReady = document.querySelector('[data-sfmc-app]') || 
+                         document.querySelector('.slds-scope') ||
+                         document.querySelector('.slds-spinner_container') ||
+                         document.querySelector('[class*="sfmc"]');
+        if (sfmcReady) {
+            debugLog('[CloudPage Maestro] SFMC elements detected, proceeding');
+            break;
+        }
+        await new Promise(r => setTimeout(r, CPM_CONFIG.INIT_POLL_INTERVAL_MS));
+    }
     
-    // Check if SFMC elements are present and visible
-    const sfmcCheck = document.querySelector('[data-sfmc-app]') || 
-                     document.querySelector('.slds-scope') ||
-                     document.querySelector('.slds-spinner_container') ||
-                     document.querySelector('[class*="sfmc"]') ||
-                     document.body;
-    
-    console.log('[CloudPage Maestro] SFMC elements detected:', !!sfmcCheck);
-    console.log('[CloudPage Maestro] Starting initialization...');
+    debugLog('[CloudPage Maestro] Starting initialization...');
 
     // ============================================
     // TOKEN CAPTURE FROM DOM
     // Enhanced token capture with both DOM and network interception
     // ============================================
     function captureTokensFromDOM() {
-        console.log('[CloudPage Maestro] Setting up token capture...');
+        debugLog('[CloudPage Maestro] Setting up token capture...');
         
         // Look for tokens in localStorage, sessionStorage, or global variables
         try {
@@ -257,7 +263,7 @@ console.log('══════════════════════�
             return originalSetRequestHeader.apply(this, arguments);
         };
         
-        console.log('[CloudPage Maestro] Token capture hooks installed');
+        debugLog('[CloudPage Maestro] Token capture hooks installed');
     }
 
     // Token capture from DOM and network requests
@@ -267,15 +273,10 @@ console.log('══════════════════════�
     async function initializeCloudPageMaestro() {
         console.log('[CloudPage Maestro] Getting tokens from background...');
 
-        // Check if chrome.runtime is available (extension context)
+        // v6: When Chrome runtime is not available, do not use captureTokensFromDOM() return
+        // (it does not return tokens). Show clear message and require extension context.
         if (!chrome.runtime || !chrome.runtime.sendMessage) {
-            console.error('[CloudPage Maestro] Chrome runtime not available');
-            // Fallback: capture tokens from DOM directly
-            const tokens = captureTokensFromDOM();
-            if (tokens.pageHookToken || tokens.appcoreToken) {
-                console.log('[CloudPage Maestro] Using tokens from DOM');
-                createMainUI(tokens.pageHookToken, tokens.appcoreToken);
-            }
+            console.error('[CloudPage Maestro] Chrome runtime not available - extension context required. Load the extension from chrome://extensions/');
             return;
         }
 
@@ -395,7 +396,7 @@ function buildSearchOrTree(keyword) {
 
 // Build category tree for folder path resolution
 async function buildCategoryTree(pageHookToken) {
-    console.log(`[DEBUG] buildCategoryTree START - hasToken: ${!!pageHookToken}`);
+    debugLog(`[DEBUG] buildCategoryTree START - hasToken: ${!!pageHookToken}`);
     window.CPM_STATE.categories.clear();
     
     window.CPM_STATE.allAssetsForCategories.forEach(asset => {
@@ -411,43 +412,43 @@ async function buildCategoryTree(pageHookToken) {
         }
     });
     
-    console.log(`[DEBUG] Built category tree with ${window.CPM_STATE.categories.size} folders`);
-    console.log(`[DEBUG] First few categories:`, Array.from(window.CPM_STATE.categories.entries()).slice(0, 3));
+    debugLog(`[DEBUG] Built category tree with ${window.CPM_STATE.categories.size} folders`);
+    debugLog(`[DEBUG] First few categories:`, Array.from(window.CPM_STATE.categories.entries()).slice(0, 3));
     
     // Build full paths for all categories (fetch missing parents from API)
     const pathPromises = [];
     window.CPM_STATE.categories.forEach((cat, id) => {
         if (!cat.fullPath) {
-            console.log(`[DEBUG] Processing category ${id}: ${cat.name} (parentId: ${cat.parentId})`);
+            debugLog(`[DEBUG] Processing category ${id}: ${cat.name} (parentId: ${cat.parentId})`);
             pathPromises.push(
                 buildFullPath(id, pageHookToken).then(fullPath => {
                     cat.fullPath = fullPath;
-                    console.log(`[DEBUG] Set fullPath for category ${id}: ${fullPath}`);
+                    debugLog(`[DEBUG] Set fullPath for category ${id}: ${fullPath}`);
                 })
             );
         }
     });
     
     await Promise.all(pathPromises);
-    console.log(`[DEBUG] buildCategoryTree DONE - Processed ${pathPromises.length} categories`);
+    debugLog(`[DEBUG] buildCategoryTree DONE - Processed ${pathPromises.length} categories`);
 }
 
 // Fetch category details from API
 async function fetchCategoryDetails(categoryId, pageHookToken) {
     if (!categoryId || !pageHookToken) {
-        console.log(`[DEBUG] fetchCategoryDetails - Missing params: categoryId=${categoryId}, hasToken=${!!pageHookToken}`);
+        debugLog(`[DEBUG] fetchCategoryDetails - Missing params: categoryId=${categoryId}, hasToken=${!!pageHookToken}`);
         return null;
     }
     
     const stack = window.CPM_STATE.stack || getStack();
     if (!stack) {
-        console.log(`[DEBUG] fetchCategoryDetails - No stack detected`);
+        debugLog(`[DEBUG] fetchCategoryDetails - No stack detected`);
         return null;
     }
     
     try {
         const url = `https://content-builder.${stack}.marketingcloudapps.com/fuelapi/asset/v1/content/categories/${categoryId}`;
-        console.log(`[DEBUG] Fetching category ${categoryId} from API...`);
+        debugLog(`[DEBUG] Fetching category ${categoryId} from API...`);
         
         // Use Chrome extension message passing to avoid CORS
         const response = await new Promise((resolve, reject) => {
@@ -475,7 +476,7 @@ async function fetchCategoryDetails(categoryId, pageHookToken) {
             });
         });
         
-        console.log(`[DEBUG] Fetched category ${categoryId}:`, response);
+        debugLog(`[DEBUG] Fetched category ${categoryId}:`, response);
         
         return {
             id: response.id,
@@ -490,29 +491,29 @@ async function fetchCategoryDetails(categoryId, pageHookToken) {
 
 // Build full folder path by traversing parent chain (fetching missing parents from API)
 async function buildFullPath(categoryId, pageHookToken) {
-    console.log(`[DEBUG] ========================================`);
-    console.log(`[DEBUG] buildFullPath START - categoryId: ${categoryId}`);
+    debugLog(`[DEBUG] ========================================`);
+    debugLog(`[DEBUG] buildFullPath START - categoryId: ${categoryId}`);
     
     const parts = [];
     let currentId = categoryId;
     let depth = 0;
     
     while (currentId && depth < 20) {
-        console.log(`[DEBUG] Depth ${depth}: Looking for category ${currentId}`);
+        debugLog(`[DEBUG] Depth ${depth}: Looking for category ${currentId}`);
         
         let cat = window.CPM_STATE.categories.get(currentId);
         
         if (cat) {
-            console.log(`[DEBUG] Found in cache: ${cat.name} (parentId: ${cat.parentId})`);
+            debugLog(`[DEBUG] Found in cache: ${cat.name} (parentId: ${cat.parentId})`);
         } else {
-            console.log(`[DEBUG] Not in cache, fetching from API...`);
+            debugLog(`[DEBUG] Not in cache, fetching from API...`);
             cat = await fetchCategoryDetails(currentId, pageHookToken);
             if (cat) {
-                console.log(`[DEBUG] Fetched from API: ${cat.name} (parentId: ${cat.parentId})`);
+                debugLog(`[DEBUG] Fetched from API: ${cat.name} (parentId: ${cat.parentId})`);
                 // Cache the fetched category
                 window.CPM_STATE.categories.set(currentId, cat);
             } else {
-                console.log(`[DEBUG] Failed to fetch category ${currentId}, stopping traversal`);
+                debugLog(`[DEBUG] Failed to fetch category ${currentId}, stopping traversal`);
                 break;
             }
         }
@@ -521,14 +522,14 @@ async function buildFullPath(categoryId, pageHookToken) {
         currentId = cat.parentId;
         depth++;
         
-        console.log(`[DEBUG] Current path so far: ${parts.join(' / ')}`);
+        debugLog(`[DEBUG] Current path so far: ${parts.join(' / ')}`);
     }
     
     // Remove 'CloudPages' root folder from display
     const filteredParts = parts.filter(p => p.toLowerCase() !== 'cloudpages');
     const finalPath = filteredParts.length > 0 ? filteredParts.join(' / ') : 'Cloud Pages';
-    console.log(`[DEBUG] buildFullPath DONE - Final path: ${finalPath}`);
-    console.log(`[DEBUG] ========================================`);
+    debugLog(`[DEBUG] buildFullPath DONE - Final path: ${finalPath}`);
+    debugLog(`[DEBUG] ========================================`);
     
     return finalPath;
 }
@@ -566,23 +567,24 @@ function createMainUI(pageHookToken, appcoreToken) {
         <div class="cpm-header">
             <div class="cpm-header-left">
                 <div class="cpm-logo" style="display: flex; justify-content: center; align-items: center;">
-                    <img src="https://i.imgur.com/A6bV4BF.png" alt="CloudPage Maestro" style="height: 130px; width: auto;">
+                    <img src="https://i.imgur.com/A6bV4BF.png" alt="CloudPage Maestro" style="height: 80px; margin-top: 5px; margin-bottom: 5px; width: auto;">
                     <span style="font-weight: 600; margin-left: 8px; font-size: 20px;">CloudPage Maestro</span>
                 </div>
             </div>
             <div class="cpm-header-actions">
-                <button class="cpm-header-btn batch-unpublish" id="cpm-batch-unpublish" disabled>
-                    ${ICONS.eyeClosed} Unpublish (<span id="cpm-unpublish-count">0</span>)
+                <button class="cpm-header-btn cpm-btn-neutral batch-unpublish" id="cpm-batch-unpublish" disabled title="Unpublish selected">
+                    ${ICONS.eyeClosed} <span class="cpm-btn-label">Unpublish</span><span class="cpm-pill" id="cpm-unpublish-count" aria-hidden="true"></span>
                 </button>
-                <button class="cpm-header-btn batch-publish" id="cpm-batch-publish" disabled>
-                    ${ICONS.cloudUpload} Publish (<span id="cpm-publish-count">0</span>)
+                <button class="cpm-header-btn cpm-btn-neutral batch-publish" id="cpm-batch-publish" disabled title="Publish selected">
+                    ${ICONS.cloudUpload} <span class="cpm-btn-label">Publish</span><span class="cpm-pill" id="cpm-publish-count" aria-hidden="true"></span>
                 </button>
-                <button class="cpm-header-btn batch-move" id="cpm-batch-move" disabled>
-                    ${ICONS.folder} Move (<span id="cpm-move-count">0</span>)
+                <button class="cpm-header-btn cpm-btn-neutral batch-move" id="cpm-batch-move" disabled title="Move selected">
+                    ${ICONS.folder} <span class="cpm-btn-label">Move</span><span class="cpm-pill" id="cpm-move-count" aria-hidden="true"></span>
                 </button>
-                <button class="cpm-header-btn" id="cpm-refresh">${ICONS.refresh} Refresh</button>
-                <button class="cpm-header-btn" id="cpm-export-csv">${ICONS.download} Export</button>
-                <button class="cpm-header-btn" id="cpm-close-btn">${ICONS.cancel} Close</button>
+                <span class="cpm-header-divider" aria-hidden="true"></span>
+                <button class="cpm-header-btn cpm-btn-brand" id="cpm-refresh" title="Refresh">${ICONS.refresh} <span class="cpm-btn-label">Refresh</span></button>
+                <button class="cpm-header-btn cpm-btn-neutral" id="cpm-export-csv" title="Export current page">${ICONS.download} <span class="cpm-btn-label">Export</span></button>
+                <button class="cpm-header-btn cpm-btn-ghost" id="cpm-close-btn" title="Close panel">${ICONS.cancel} <span class="cpm-btn-label">Close</span></button>
             </div>
         </div>
 
@@ -663,6 +665,7 @@ function createMainUI(pageHookToken, appcoreToken) {
     // Add toggle button (CP Maestro - on right side)
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'cpm-toggle-btn';
+    toggleBtn.setAttribute('title', 'Open CloudPage Maestro');
     toggleBtn.textContent = 'CP Maestro';
     toggleBtn.addEventListener('click', () => {
         const mgr = document.getElementById('cloudpages-manager');
@@ -700,7 +703,7 @@ function addStyles() {
     const style = document.createElement('style');
     style.id = 'cpm-styles';
     style.textContent = `
-        /* Main Panel Container - Slide from right */
+        /* Main Panel Container - SLDS-aligned */
         #cloudpages-manager {
             position: fixed;
             top: 0;
@@ -708,42 +711,48 @@ function addStyles() {
             width: 85%;
             height: 100vh;
             background: #ffffff;
-            box-shadow: -8px 0 32px rgba(0,0,0,0.2);
+            box-shadow: -4px 0 24px rgba(0,0,0,0.12);
             z-index: 999999;
             display: flex;
             flex-direction: column;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-left: 1px solid #e5e7eb;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            border-left: 1px solid #e5e5e5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Salesforce Sans', sans-serif;
         }
 
         #cloudpages-manager.minimized {
             transform: translateX(100%);
         }
 
-        /* Toggle Button - CP Maestro */
+        /* Toggle Button - CP Maestro (with logo) */
         .cpm-toggle-btn {
             position: fixed;
             top: 50%;
             right: 0;
             transform: translateY(-50%);
-            background: #0176d3;
+            background: linear-gradient(135deg, #0176d3 0%, #0d9dda 100%);
             color: #ffffff;
             border: none;
-            padding: 20px 12px;
+            padding: 14px 12px;
             border-radius: 8px 0 0 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             z-index: 1000000;
-            box-shadow: -2px 2px 12px rgba(0,0,0,0.2);
+            box-shadow: -2px 2px 12px rgba(1,118,211,0.35);
             font-weight: 600;
             writing-mode: vertical-rl;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 3px solid rgba(255,255,255,0.4);
+            transition: padding-right 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
         }
 
         .cpm-toggle-btn:hover {
             padding-right: 16px;
-            background: #015ca1;
+            background: linear-gradient(135deg, #015ca1 0%, #0176d3 100%);
+            box-shadow: -3px 2px 16px rgba(1,118,211,0.45);
         }
 
         /* Header */
@@ -771,55 +780,93 @@ function addStyles() {
 
         .cpm-header-actions {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cpm-header-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.3);
+            margin: 0 4px;
         }
 
         .cpm-header-btn {
-            background: rgba(255,255,255,0.12);
-            border: none;
-            color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 6px;
+            border: 1px solid transparent;
+            padding: 8px 14px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
+            font-weight: 400;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            color: #ffffff;
         }
 
         .cpm-header-btn svg {
             flex-shrink: 0;
+            width: 16px;
+            height: 16px;
         }
 
-        .cpm-header-btn:hover {
-            background: rgba(255,255,255,0.22);
+        .cpm-header-btn.cpm-btn-neutral {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.35);
+        }
+        .cpm-header-btn.cpm-btn-neutral:hover:not(:disabled) {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.5);
         }
 
-        .cpm-header-btn.batch-unpublish {
-            color: #8A033E;
-            border-color: #FDB6C5;
-            background: #FEF0F3;
+        .cpm-header-btn.cpm-btn-brand {
+            background: rgba(255,255,255,0.95);
+            color: #0176d3;
+            border-color: rgba(255,255,255,0.9);
+        }
+        .cpm-header-btn.cpm-btn-brand:hover:not(:disabled) {
+            background: #ffffff;
+            color: #014a8a;
         }
 
+        .cpm-header-btn.cpm-btn-ghost {
+            background: transparent;
+            color: rgba(255,255,255,0.9);
+        }
+        .cpm-header-btn.cpm-btn-ghost:hover:not(:disabled) {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .cpm-header-btn.batch-unpublish { color: #ffffff; }
         .cpm-header-btn.batch-unpublish:hover:not(:disabled) {
-            background: #FDDDE3;
-            border-color: #E3066A;
-            color: #E3066A;
+            background: rgba(194, 57, 52, 0.2);
+            border-color: rgba(255,255,255,0.4);
         }
-
-        .cpm-header-btn.batch-publish {
-            color: #0B827C;
-            border-color: #ACF3E4;
-            background: #DEF9F3;
-        }
-
         .cpm-header-btn.batch-publish:hover:not(:disabled) {
-            background: #ACF3E4;
-            border-color: #06A59A;
-            color: #056764;
+            background: rgba(46, 132, 74, 0.25);
+            border-color: rgba(255,255,255,0.4);
         }
+
+        .cpm-pill {
+            display: none;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.35);
+            color: #0176d3;
+            font-size: 11px;
+            font-weight: 600;
+            align-items: center;
+            justify-content: center;
+            margin-left: 4px;
+        }
+        .cpm-pill.cpm-pill-visible {
+            display: inline-flex;
+        }
+        .cpm-header-btn.batch-unpublish .cpm-pill.cpm-pill-visible { background: rgba(255,255,255,0.9); color: #c23934; }
+        .cpm-header-btn.batch-publish .cpm-pill.cpm-pill-visible { background: rgba(255,255,255,0.9); color: #2e844a; }
 
         .cpm-header-btn:disabled {
             opacity: 0.5;
@@ -834,40 +881,41 @@ function addStyles() {
         }
 
         .cpm-section {
-            background: #f9fafb;
-            border-radius: 8px;
+            background: #f3f3f3;
+            border-radius: 4px;
             padding: 16px;
             margin-bottom: 16px;
+            border: 1px solid #e5e5e5;
         }
 
         .cpm-section-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #374151;
+            font-size: 12px;
+            font-weight: 700;
+            color: #706e6b;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 12px;
         }
 
-        /* Token Badges */
+        /* Token Badges - SLDS */
         .cpm-token-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 12px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 20px;
+            padding: 5px 10px;
+            background: #e8f4ea;
+            border: 1px solid #b8d4be;
+            border-radius: 4px;
             font-size: 11px;
-            font-weight: 500;
-            color: #10b981;
+            font-weight: 600;
+            color: #2e844a;
             flex-shrink: 0;
         }
 
         .cpm-token-badge.error {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.3);
-            color: #ef4444;
+            background: #fef5f5;
+            border-color: #e0b4b4;
+            color: #c23934;
         }
 
         .cpm-token-dot {
@@ -885,20 +933,18 @@ function addStyles() {
         }
 
         .cpm-stat {
-            background: white;
-            padding: 8px 10px;
-            border-radius: 6px;
+            background: #ffffff;
+            padding: 10px 12px;
+            border-radius: 4px;
             text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
+            transition: border-color 0.15s, background 0.15s;
+            border: 1px solid #e5e5e5;
         }
 
         .cpm-stat:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             border-color: #0176d3;
+            background: #f3f9ff;
         }
 
         .cpm-stat.active {
@@ -911,21 +957,21 @@ function addStyles() {
         }
 
         .cpm-stat.active .cpm-stat-value {
-            color: white;
+            color: #ffffff;
         }
 
         .cpm-stat-label {
-            font-size: 9px;
-            color: #6b7280;
-            margin-bottom: 3px;
+            font-size: 10px;
+            color: #706e6b;
+            margin-bottom: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
         }
 
         .cpm-stat-value {
             font-size: 18px;
             font-weight: 700;
-            color: #111827;
+            color: #080707;
         }
 
         /* Search Bar */
@@ -936,39 +982,41 @@ function addStyles() {
 
         #cpm-search-input {
             flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
+            padding: 8px 12px;
+            border: 1px solid #c9c9c9;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #080707;
         }
 
         #cpm-search-input:focus {
             outline: none;
             border-color: #0176d3;
-            box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.1);
+            box-shadow: 0 0 0 2px rgba(1, 118, 211, 0.2);
         }
 
         .cpm-btn {
-            padding: 10px 16px;
-            border: none;
+            padding: 8px 16px;
+            border: 1px solid #0176d3;
             background: #0176d3;
-            color: white;
-            border-radius: 6px;
+            color: #ffffff;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         .cpm-btn:hover {
-            background: #015ca1;
+            background: #014a8a;
+            border-color: #014a8a;
         }
 
-        /* Table Container */
+        /* Table Container - SLDS */
         .cpm-table-container {
-            background: white;
-            border-radius: 8px;
+            background: #ffffff;
+            border-radius: 4px;
             overflow-x: auto;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e5e5e5;
         }
 
         .cpm-table {
@@ -980,15 +1028,15 @@ function addStyles() {
         }
 
         .cpm-table thead th {
-            background: #f8fafc;
-            padding: 14px 12px;
+            background: #f3f3f3;
+            padding: 12px 14px;
             text-align: left;
             font-size: 11px;
             font-weight: 700;
-            color: #475569;
+            color: #706e6b;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
-            border-bottom: 1px solid #e2e8f0;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #c9c9c9;
         }
         
         /* Column Width Optimization */
@@ -1003,38 +1051,38 @@ function addStyles() {
         .cpm-table th:nth-child(9) { width: 120px; } /* Actions */
 
         .cpm-table tbody td {
-            padding: 12px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #334155;
+            padding: 12px 14px;
+            border-bottom: 1px solid #e5e5e5;
+            color: #080707;
         }
 
         .cpm-table tbody tr {
             background: #ffffff;
-            transition: all 0.15s ease-out;
+            transition: background 0.1s;
         }
 
         .cpm-table tbody tr:hover {
-            background: #f8fafc;
+            background: #f3f3f3;
         }
 
-        /* ID Column */
+        /* ID Column - SLDS link */
         .cpm-id {
             font-family: monospace;
             font-weight: 600;
-            color: #00588F;
+            color: #0176d3;
             cursor: pointer;
             font-size: 12px;
         }
 
         .cpm-id:hover {
             text-decoration: underline;
-            color: #FF6A39;
+            color: #014a8a;
         }
 
-        /* Breadcrumb / Folder */
+        /* Breadcrumb / Folder - SLDS secondary text */
         .cpm-breadcrumb {
             font-size: 12px;
-            color: #6b7280;
+            color: #706e6b;
             max-width: 200px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -1057,23 +1105,26 @@ function addStyles() {
         }
 
         .cpm-status.published {
-            background: rgba(6, 165, 154, 0.12);
-            color: #0B827C;
+            background: #e8f4ea;
+            color: #2e844a;
+            border: 1px solid #b8d4be;
         }
 
         .cpm-status.unpublished {
-            background: rgba(227, 6, 106, 0.12);
-            color: #8A033E;
+            background: #fef5f5;
+            color: #c23934;
+            border: 1px solid #e0b4b4;
         }
 
         .cpm-status.draft {
-            background: rgba(255, 183, 93, 0.15);
-            color: #8C4B02;
+            background: #fff8f0;
+            color: #b65c00;
+            border: 1px solid #f0d6a8;
         }
 
-        /* URL Column */
+        /* URL Column - SLDS */
         .cpm-url {
-            color: #00588F;
+            color: #0176d3;
             text-decoration: none;
             font-size: 12px;
             display: inline-flex;
@@ -1083,63 +1134,59 @@ function addStyles() {
 
         .cpm-url:hover {
             text-decoration: underline;
-            color: #0176d3;
+            color: #014a8a;
         }
 
-        /* Action Buttons */
+        /* Action Buttons - SLDS-style */
         .cpm-actions {
             display: flex;
             gap: 6px;
+            flex-wrap: wrap;
         }
 
         .cpm-action-btn {
-            padding: 6px 10px;
-            border: 1px solid #cbd5e1;
+            padding: 5px 10px;
+            border: 1px solid #c9c9c9;
             background: #ffffff;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            color: #334155;
+            font-size: 12px;
+            font-weight: 400;
+            color: #080707;
             white-space: nowrap;
-            transition: all 0.15s ease;
+            transition: border-color 0.15s, background 0.15s, color 0.15s;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
         }
+        .cpm-action-btn svg { flex-shrink: 0; width: 14px; height: 14px; }
 
         .cpm-action-btn:hover {
-            border-color: #0250D9;
-            color: #0250D9;
-            background: #eff6ff;
+            border-color: #0176d3;
+            color: #0176d3;
+            background: #f3f9ff;
         }
 
-        .unpublish-btn {
-            color: #8A033E;
-            border-color: #FDB6C5;
-            background: #FEF0F3;
-            min-width: 95px;
-            justify-content: center;
+        .cpm-action-btn.unpublish-btn {
+            color: #c23934;
+            border-color: #e0b4b4;
+            background: #fef5f5;
+        }
+        .cpm-action-btn.unpublish-btn:hover {
+            border-color: #c23934;
+            background: #fdeaea;
+            color: #a61b15;
         }
 
-        .unpublish-btn:hover {
-            background: #FDDDE3;
-            border-color: #E3066A;
-            color: #E3066A;
+        .cpm-action-btn.publish-btn {
+            color: #2e844a;
+            border-color: #b8d4be;
+            background: #f3faf4;
         }
-
-        .publish-btn {
-            color: #0B827C;
-            border-color: #ACF3E4;
-            background: #DEF9F3;
-            min-width: 95px;
-            justify-content: center;
-        }
-
-        .publish-btn:hover {
-            background: #ACF3E4;
-            border-color: #06A59A;
-            color: #056764;
+        .cpm-action-btn.publish-btn:hover {
+            border-color: #2e844a;
+            background: #e8f4ea;
+            color: #1e5c32;
         }
 
         /* Download Icon */
@@ -1152,29 +1199,29 @@ function addStyles() {
             opacity: 0.7;
         }
 
-        /* Checkbox */
+        /* Checkbox - SLDS brand */
         .page-select-checkbox, #cpm-select-all {
             cursor: pointer;
             width: 16px;
             height: 16px;
-            accent-color: #0250D9;
+            accent-color: #0176d3;
         }
 
-        /* Pagination */
+        /* Pagination - SLDS */
         #cpm-pagination {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 20px;
-            background: white;
-            border-top: 1px solid #e5e7eb;
-            border-radius: 0 0 8px 8px;
+            padding: 12px 16px;
+            background: #f3f3f3;
+            border-top: 1px solid #e5e5e5;
+            border-radius: 0 0 4px 4px;
         }
 
         .cpm-pagination-info {
             font-size: 13px;
-            color: #6b7280;
-            font-weight: 500;
+            color: #706e6b;
+            font-weight: 400;
         }
 
         .cpm-pagination-buttons {
@@ -1185,32 +1232,32 @@ function addStyles() {
 
         .cpm-page-btn {
             padding: 6px 12px;
-            border: 1px solid #d1d5db;
-            background: white;
+            border: 1px solid #c9c9c9;
+            background: #ffffff;
             border-radius: 4px;
             cursor: pointer;
             font-size: 13px;
-            font-weight: 500;
-            color: #374151;
-            transition: all 0.2s;
+            font-weight: 400;
+            color: #080707;
+            transition: border-color 0.15s, background 0.15s;
             min-width: 36px;
         }
 
         .cpm-page-btn:hover:not(:disabled) {
             border-color: #0176d3;
             color: #0176d3;
-            background: #eff6ff;
+            background: #f3f9ff;
         }
 
         .cpm-page-btn.active {
             background: #0176d3;
             border-color: #0176d3;
-            color: white;
-            font-weight: 600;
+            color: #ffffff;
+            font-weight: 400;
         }
 
         .cpm-page-btn:disabled {
-            opacity: 0.4;
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
@@ -1379,17 +1426,26 @@ function setupEventListeners(pageHookToken, appcoreToken) {
             });
             statCard.classList.add('active');
             
-            // Update filter state - DO NOT reset page
             window.CPM_STATE.currentFilter = statCard.dataset.filter;
+            window.CPM_STATE.currentPage = 1;
             renderTable();
             // Enrich visible items after filter change
             enrichVisibleItems(appcoreToken);
         });
     }
     
-    // Refresh button
+    // Refresh button - re-fetch tokens so badges reflect current state, then load data
     document.getElementById('cpm-refresh')?.addEventListener('click', () => {
-        loadAllData(pageHookToken, appcoreToken);
+        chrome.runtime.sendMessage({ type: 'GET_TOKENS' }, (response) => {
+            if (response && response.success && response.tokens) {
+                const ph = response.tokens.pageHookToken;
+                const ac = response.tokens.appcoreToken;
+                updateTokenBadges(ph, ac);
+                loadAllData(ph, ac);
+            } else {
+                loadAllData(pageHookToken, appcoreToken);
+            }
+        });
     });
     
     // Export CSV button
@@ -1433,18 +1489,13 @@ function setupEventListeners(pageHookToken, appcoreToken) {
         if (pageBtn && !pageBtn.disabled) {
             const page = parseInt(pageBtn.dataset.page);
             if (!isNaN(page) && page > 0) {
-                window.CPM_STATE.currentPage = page;
-                
-                // If in search mode, fetch new page
                 if (window.CPM_STATE.isSearchMode && window.CPM_STATE.currentSearchTerm) {
+                    window.CPM_STATE.currentPage = page;
                     performEnhancedSearch(window.CPM_STATE.currentSearchTerm);
                 } else {
-                    renderTable();
-                    // Enrich visible items on page change
-                    enrichVisibleItems(appcoreToken);
+                    // Normal mode: fetch this page from API (only current page is in memory)
+                    loadPage(page);
                 }
-                
-                // Scroll to top of table
                 document.querySelector('.cpm-table-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
@@ -1512,12 +1563,16 @@ async function performEnhancedSearch(searchTerm) {
         const stack = window.CPM_STATE.stack || getStack();
         const url = `https://content-builder.${stack}.marketingcloudapps.com/fuelapi/asset/v1/content/assets/query?scope=ours`;
 
-        // Get current token
+        // Get current token and sync badges so they always reflect live state
         const tokenResponse = await new Promise((resolve) => {
             chrome.runtime.sendMessage({ type: 'GET_TOKENS' }, resolve);
         });
-        
+        const ph = tokenResponse?.tokens?.pageHookToken ?? null;
+        const ac = tokenResponse?.tokens?.appcoreToken ?? null;
+        updateTokenBadges(ph, ac);
+
         if (!tokenResponse || !tokenResponse.success || !tokenResponse.tokens.pageHookToken) {
+            showNotification('Search requires a valid session. Click Refresh to try again.', 'error');
             throw new Error('No token available for search');
         }
 
@@ -1629,104 +1684,43 @@ async function loadAllData(pageHookToken, appcoreToken, retryCount = 0) {
     }
     
     showLoading(true);
-    
+    updateTokenBadges(pageHookToken, appcoreToken);
+
     // Clear enrichment cache on refresh to get fresh status
     window.CPM_STATE.enrichmentCache.clear();
     console.log('[CloudPage Maestro] Cleared enrichment cache for fresh data');
     
     try {
-        console.log('[CloudPage Maestro] Loading landing pages and code resources...');
+        console.log('[CloudPage Maestro] Loading first page only (100 items) for fast startup...');
         
-        // 1. Fetch landing pages from CloudPages API (has correct status and URL)
-        console.log('[CloudPage Maestro] Fetching landing pages from CloudPages API...');
-        console.log('[CloudPage Maestro] Using appcoreToken:', appcoreToken ? appcoreToken.substring(0, 20) + '...' : 'MISSING');
+        // Fetch only first page (100 items) from Content Builder - no bulk load
+        const result = await fetchCloudPagesAPI(stack, pageHookToken, 1, 100);
+        const allContentBuilderAssets = result.items || [];
+        const totalCount = result.totalCount || allContentBuilderAssets.length || 0;
         
-        window.CPM_STATE.landingPages = [];
-        let lpPage = 1;
-        let hasMoreLP = true;
+        window.CPM_STATE.assetsTotalCount = totalCount > 0 ? totalCount : allContentBuilderAssets.length;
+        console.log('[CloudPage Maestro] Loaded', allContentBuilderAssets.length, 'items (page 1 of', totalCount, 'total)');
         
-        // Try to fetch from CloudPages API, but don't fail if it doesn't work
-        try {
-            while (hasMoreLP) {
-                const result = await fetchLandingPagesAPI(stack, appcoreToken, lpPage, 100);
-                window.CPM_STATE.landingPages = window.CPM_STATE.landingPages.concat(result.items);
-                hasMoreLP = result.hasMore;
-                lpPage++;
-                
-                // Safety limit
-                if (lpPage > 50) break;
-            }
-            
-            console.log('[CloudPage Maestro] Loaded', window.CPM_STATE.landingPages.length, 'landing pages from CloudPages API');
-        } catch (error) {
-            console.warn('[CloudPage Maestro] CloudPages API fetch failed:', error.message);
-            console.warn('[CloudPage Maestro] Will continue with Content Builder data only (status/URL will not be available)');
-        }
-        
-        // 2. Fetch all assets from Content Builder API (for code resources + category info)
-        console.log('[CloudPage Maestro] Fetching assets from Content Builder API...');
-        let allContentBuilderAssets = [];
-        let cbPage = 1;
-        let hasMoreCB = true;
-        
-        while (hasMoreCB) {
-            const result = await fetchCloudPagesAPI(stack, pageHookToken, cbPage, 100);
-            allContentBuilderAssets = allContentBuilderAssets.concat(result.items);
-            hasMoreCB = result.hasMore;
-            cbPage++;
-            
-            // Safety limit
-            if (cbPage > 50) break;
-        }
-        
-        console.log('[CloudPage Maestro] Loaded', allContentBuilderAssets.length, 'assets from Content Builder');
-        
-        // 3. Build a map of landing pages from CloudPages API by siteAssetId for quick lookup
-        const cloudPagesMap = new Map();
-        window.CPM_STATE.landingPages.forEach(lp => {
-            if (lp.siteAssetId) {
-                cloudPagesMap.set(lp.siteAssetId, lp);
-            }
-        });
-        
-        console.log('[CloudPage Maestro] CloudPages API returned', cloudPagesMap.size, 'landing pages with status/URL');
-        
-        // 4. Get ALL landing pages from Content Builder (the source of truth for what exists)
-        const cbLandingPages = allContentBuilderAssets.filter(asset => 
+        // Build merged list from this page only (status/URL come from enrichVisibleItems)
+        const cbLandingPages = allContentBuilderAssets.filter(asset =>
             asset.assetType?.name?.toLowerCase() === 'landingpage'
         );
+        const landingPageItems = cbLandingPages.map(cbAsset => ({
+            id: cbAsset.id,
+            pageId: null,
+            name: cbAsset.name,
+            assetType: cbAsset.assetType,
+            status: cbAsset.status?.status || 'Draft',
+            url: null,
+            modifiedDate: cbAsset.modifiedDate,
+            createdDate: cbAsset.createdDate,
+            modifiedBy: cbAsset.modifiedBy,
+            createdBy: cbAsset.createdBy,
+            category: cbAsset.category,
+            customerKey: cbAsset.customerKey,
+            meta: cbAsset.meta
+        }));
         
-        console.log('[CloudPage Maestro] Content Builder has', cbLandingPages.length, 'landing pages');
-        
-        // 5. Merge: For each Content Builder landing page, enrich with CloudPages data if available
-        const landingPageItems = cbLandingPages.map(cbAsset => {
-            const cloudPageData = cloudPagesMap.get(cbAsset.id);
-            
-            return {
-                id: cbAsset.id,
-                pageId: cloudPageData?.id || null,
-                name: cbAsset.name,
-                assetType: cbAsset.assetType,
-                // Use CloudPages status/URL if available, otherwise default to Draft
-                status: cloudPageData?.status?.status || cbAsset.status?.status || 'Draft',
-                url: cloudPageData?.url || null,
-                modifiedDate: cbAsset.modifiedDate,
-                createdDate: cbAsset.createdDate,
-                modifiedBy: cbAsset.modifiedBy,
-                createdBy: cbAsset.createdBy,
-                category: cbAsset.category,
-                customerKey: cbAsset.customerKey,
-                meta: cbAsset.meta
-            };
-        });
-        
-        console.log('[CloudPage Maestro] Created', landingPageItems.length, 'landing page items with merged data');
-        
-        // Skip enrichment for now - we'll lazy-load status/URL when needed
-        // This makes initial load much faster
-        console.log('[CloudPage Maestro] Skipping bulk enrichment - will fetch on-demand');
-        
-        // 7. Filter code resources from Content Builder assets
         const codeResourceItems = allContentBuilderAssets.filter(asset => {
             const typeName = asset.assetType?.name?.toLowerCase() || '';
             return ['jsoncoderesource', 'jscoderesource', 'codesnippetblock', 'csscoderesource'].includes(typeName);
@@ -1737,14 +1731,12 @@ async function loadAllData(pageHookToken, appcoreToken, retryCount = 0) {
             pageId: null
         }));
         
-        console.log('[CloudPage Maestro] Created', codeResourceItems.length, 'code resource items');
-        
-        // 8. Combine all items and update state
         window.CPM_STATE.allAssets = [...landingPageItems, ...codeResourceItems];
-        window.CPM_STATE.landingPages = landingPageItems; // Update landingPages to match
+        window.CPM_STATE.landingPages = landingPageItems;
         window.CPM_STATE.allAssetsForCategories = allContentBuilderAssets;
+        window.CPM_STATE.currentPage = 1;
         
-        console.log('[CloudPage Maestro] Total items:', window.CPM_STATE.allAssets.length, '(', landingPageItems.length, 'landing pages +', codeResourceItems.length, 'code resources)');
+        console.log('[CloudPage Maestro] Showing', window.CPM_STATE.allAssets.length, 'items (1-' + window.CPM_STATE.allAssets.length + ' of ' + totalCount + ')');
         
         // Build category tree
         await buildCategoryTree(pageHookToken);
@@ -1759,7 +1751,7 @@ async function loadAllData(pageHookToken, appcoreToken, retryCount = 0) {
         
         // Hide loading and show success
         showLoading(false);
-        showNotification('Loaded ' + window.CPM_STATE.allAssets.length + ' items successfully', 'success');
+        showNotification('Loaded ' + window.CPM_STATE.allAssets.length + ' items (page 1 of ' + window.CPM_STATE.assetsTotalCount + ')', 'success');
         
     } catch (error) {
         console.error('[CloudPage Maestro] Error loading data:', error);
@@ -1785,6 +1777,75 @@ async function loadAllData(pageHookToken, appcoreToken, retryCount = 0) {
             showNotification('Error loading data: ' + error.message + '. Try refreshing the page.', 'error');
             showLoading(false);
         }
+    }
+}
+
+// Load a single page from the API (used when user clicks page 2, 3, etc.) - keeps memory small
+async function loadPage(page) {
+    const stack = window.CPM_STATE.stack || getStack();
+    if (!stack) {
+        showNotification('Error: Could not determine SFMC stack', 'error');
+        return;
+    }
+    const tokenResponse = await new Promise(resolve => chrome.runtime.sendMessage({ type: 'GET_TOKENS' }, resolve));
+    const ph = tokenResponse?.tokens?.pageHookToken ?? null;
+    const ac = tokenResponse?.tokens?.appcoreToken ?? null;
+    updateTokenBadges(ph, ac);
+    if (!tokenResponse || !tokenResponse.success || !tokenResponse.tokens.pageHookToken) {
+        showNotification('Authentication required. Please refresh the page.', 'error');
+        return;
+    }
+    const pageHookToken = tokenResponse.tokens.pageHookToken;
+    const appcoreToken = tokenResponse.tokens.appcoreToken;
+
+    showLoading(true);
+    try {
+        const result = await fetchCloudPagesAPI(stack, pageHookToken, page, 100);
+        const allContentBuilderAssets = result.items || [];
+        if (result.totalCount != null) window.CPM_STATE.assetsTotalCount = result.totalCount;
+
+        const cbLandingPages = allContentBuilderAssets.filter(asset =>
+            asset.assetType?.name?.toLowerCase() === 'landingpage'
+        );
+        const landingPageItems = cbLandingPages.map(cbAsset => ({
+            id: cbAsset.id,
+            pageId: null,
+            name: cbAsset.name,
+            assetType: cbAsset.assetType,
+            status: cbAsset.status?.status || 'Draft',
+            url: null,
+            modifiedDate: cbAsset.modifiedDate,
+            createdDate: cbAsset.createdDate,
+            modifiedBy: cbAsset.modifiedBy,
+            createdBy: cbAsset.createdBy,
+            category: cbAsset.category,
+            customerKey: cbAsset.customerKey,
+            meta: cbAsset.meta
+        }));
+        const codeResourceItems = allContentBuilderAssets.filter(asset => {
+            const typeName = asset.assetType?.name?.toLowerCase() || '';
+            return ['jsoncoderesource', 'jscoderesource', 'codesnippetblock', 'csscoderesource'].includes(typeName);
+        }).map(asset => ({
+            ...asset,
+            status: asset.status?.status || 'Draft',
+            url: null,
+            pageId: null
+        }));
+
+        window.CPM_STATE.allAssets = [...landingPageItems, ...codeResourceItems];
+        window.CPM_STATE.landingPages = landingPageItems;
+        window.CPM_STATE.allAssetsForCategories = allContentBuilderAssets;
+        window.CPM_STATE.currentPage = page;
+
+        await buildCategoryTree(pageHookToken);
+        updateStats();
+        renderTable();
+        enrichVisibleItems(appcoreToken);
+    } catch (error) {
+        console.error('[CloudPage Maestro] loadPage error:', error);
+        showNotification('Failed to load page: ' + error.message, 'error');
+    } finally {
+        showLoading(false);
     }
 }
 
@@ -2080,6 +2141,21 @@ async function fetchCloudPagesAPI(stack, token, page = 1, pageSize = 100) {
     });
 }
 
+// Update token badges to reflect actual token state (Search Ready / Publish Ready)
+function updateTokenBadges(pageHookToken, appcoreToken) {
+    const pagehookEl = document.getElementById('pagehook-token-status');
+    const appcoreEl = document.getElementById('appcore-token-status');
+    if (!pagehookEl || !appcoreEl) return;
+    const hasPageHook = !!(pageHookToken && pageHookToken.length >= 50);
+    const hasAppcore = !!(appcoreToken && appcoreToken.length >= 20);
+    pagehookEl.classList.toggle('error', !hasPageHook);
+    const pagehookSpan = pagehookEl.querySelector('span:last-child');
+    if (pagehookSpan) pagehookSpan.textContent = hasPageHook ? 'Search Ready' : 'Search Missing';
+    appcoreEl.classList.toggle('error', !hasAppcore);
+    const appcoreSpan = appcoreEl.querySelector('span:last-child');
+    if (appcoreSpan) appcoreSpan.textContent = hasAppcore ? 'Publish Ready' : 'Publish Missing';
+}
+
 // Update stats dashboard
 function updateStats(displayedItems = null) {
     // Overview shows TOTAL count from the API (all items in system)
@@ -2162,19 +2238,23 @@ function renderTable() {
     }
     // 'all' filter shows everything (no filtering needed)
     
-    // Pagination - In search mode, items are already paginated by API
+    // Pagination - In search mode items are already one page; in normal mode we may have only current page loaded (server-side)
     let paginatedItems;
     let totalPages;
     
     if (window.CPM_STATE.isSearchMode) {
-        // Search mode: Items already paginated, use total from API
         paginatedItems = items;
         totalPages = Math.ceil(window.CPM_STATE.assetsTotalCount / window.CPM_STATE.itemsPerPage);
     } else {
-        // Normal mode: Client-side pagination
-        totalPages = Math.ceil(items.length / window.CPM_STATE.itemsPerPage);
-        const startIndex = (window.CPM_STATE.currentPage - 1) * window.CPM_STATE.itemsPerPage;
-        paginatedItems = items.slice(startIndex, startIndex + window.CPM_STATE.itemsPerPage);
+        const serverSide = window.CPM_STATE.currentFilter === 'all' && window.CPM_STATE.assetsTotalCount > 0 && window.CPM_STATE.allAssets.length <= window.CPM_STATE.itemsPerPage;
+        if (serverSide) {
+            totalPages = Math.ceil(window.CPM_STATE.assetsTotalCount / window.CPM_STATE.itemsPerPage);
+            paginatedItems = items;
+        } else {
+            totalPages = Math.ceil(items.length / window.CPM_STATE.itemsPerPage);
+            const startIndex = (window.CPM_STATE.currentPage - 1) * window.CPM_STATE.itemsPerPage;
+            paginatedItems = items.slice(startIndex, startIndex + window.CPM_STATE.itemsPerPage);
+        }
     }
     
     // Render rows
@@ -2292,8 +2372,11 @@ function renderTable() {
         }
     });
     
-    // Render pagination
-    renderPagination(totalPages, items.length);
+    // Render pagination (use assetsTotalCount only when filter is "all" and we have one page loaded)
+    const totalForDisplay = (window.CPM_STATE.currentFilter === 'all' && window.CPM_STATE.assetsTotalCount > 0 && items.length <= window.CPM_STATE.itemsPerPage)
+        ? window.CPM_STATE.assetsTotalCount
+        : items.length;
+    renderPagination(totalPages, totalForDisplay);
     
     // Setup row event listeners - checkboxes
     tbody.querySelectorAll('.page-select-checkbox').forEach(cb => {
@@ -2627,42 +2710,78 @@ function updateBulkActions() {
     
     const totalSelected = window.CPM_STATE.selectedPages.size;
     
-    // Update unpublish button
-    if (unpublishCountEl) unpublishCountEl.textContent = unpublishCount;
+    // Update unpublish: pill only visible when count > 0 (SLDS-style)
+    if (unpublishCountEl) {
+        unpublishCountEl.textContent = unpublishCount > 0 ? unpublishCount : '';
+        unpublishCountEl.classList.toggle('cpm-pill-visible', unpublishCount > 0);
+    }
     if (batchUnpublishBtn) {
         batchUnpublishBtn.disabled = unpublishCount === 0;
-        batchUnpublishBtn.style.opacity = unpublishCount > 0 ? '1' : '0.5';
     }
     
-    // Update publish button
-    if (publishCountEl) publishCountEl.textContent = publishCount;
+    if (publishCountEl) {
+        publishCountEl.textContent = publishCount > 0 ? publishCount : '';
+        publishCountEl.classList.toggle('cpm-pill-visible', publishCount > 0);
+    }
     if (batchPublishBtn) {
         batchPublishBtn.disabled = publishCount === 0;
-        batchPublishBtn.style.opacity = publishCount > 0 ? '1' : '0.5';
     }
     
-    // Update move button
-    if (moveCountEl) moveCountEl.textContent = totalSelected;
+    if (moveCountEl) {
+        moveCountEl.textContent = totalSelected > 0 ? totalSelected : '';
+        moveCountEl.classList.toggle('cpm-pill-visible', totalSelected > 0);
+    }
     if (batchMoveBtn) {
         batchMoveBtn.disabled = totalSelected === 0;
-        batchMoveBtn.style.opacity = totalSelected > 0 ? '1' : '0.5';
     }
     
-    // Show/hide bulk bar
     if (bulkBar) bulkBar.style.display = totalSelected > 0 ? 'flex' : 'none';
 }
 
-// Export to CSV
+// Returns the exact items currently visible on screen (current page only - e.g. 100 items)
+function getCurrentPageItems() {
+    let items = [...(window.CPM_STATE.allAssets || [])];
+    if (window.CPM_STATE.currentFilter === 'landing') {
+        items = items.filter(item => item.assetType?.name?.toLowerCase() === 'landingpage');
+    } else if (window.CPM_STATE.currentFilter === 'json') {
+        items = items.filter(item => item.assetType?.name?.toLowerCase() === 'jsoncoderesource');
+    } else if (window.CPM_STATE.currentFilter === 'javascript') {
+        items = items.filter(item => {
+            const type = item.assetType?.name?.toLowerCase();
+            return type === 'jscoderesource' || type === 'codesnippetblock';
+        });
+    } else if (window.CPM_STATE.currentFilter === 'css') {
+        items = items.filter(item => item.assetType?.name?.toLowerCase() === 'csscoderesource');
+    }
+    if (window.CPM_STATE.isSearchMode) {
+        return items;
+    }
+    const start = (window.CPM_STATE.currentPage - 1) * window.CPM_STATE.itemsPerPage;
+    return items.slice(start, start + window.CPM_STATE.itemsPerPage);
+}
+
+// Export to CSV - exports only the items currently on screen (e.g. 100 items), with enriched status/URL
 function exportToCSV() {
+    const items = getCurrentPageItems();
+    if (items.length === 0) {
+        showNotification('No items to export', 'warning');
+        return;
+    }
     const headers = ['Name', 'Type', 'Status', 'Folder', 'Modified Date', 'URL'];
-    const rows = window.CPM_STATE.allAssets.map(item => {
+    const rows = items.map(item => {
+        const cached = window.CPM_STATE.getCachedEnrichment ? window.CPM_STATE.getCachedEnrichment(item.id) : null;
+        const status = typeof item.status === 'string'
+            ? item.status
+            : (item.status?.status || cached?.status || 'Draft');
+        const url = item.url || item.status?.url || cached?.url || '';
+        const folder = getFolderPath ? getFolderPath(item.category?.id) : (item.category?.name || 'Cloud Pages');
         return [
             item.name,
             item.assetType?.displayName || item.assetType?.name || '',
-            item.status?.status || 'Draft',
-            item.category?.name || 'Cloud Pages',
+            status,
+            folder || item.category?.name || 'Cloud Pages',
             new Date(item.modifiedDate).toLocaleString(),
-            item.status?.url || ''
+            url
         ];
     });
     
@@ -2678,7 +2797,7 @@ function exportToCSV() {
     link.click();
     URL.revokeObjectURL(url);
     
-    showNotification('CSV exported successfully', 'success');
+    showNotification(`Exported ${items.length} item(s) from current page`, 'success');
 }
 
 // Bulk unpublish - handles both landing pages and code resources
@@ -2858,7 +2977,7 @@ async function fetchAllFolders(pageHookToken) {
             const items = response.items || [];
             totalCount = response.count || 0;
             
-            console.log(`[DEBUG] Page ${currentPage}: Fetched ${items.length} folders (Total: ${totalCount})`);
+            debugLog(`[DEBUG] Page ${currentPage}: Fetched ${items.length} folders (Total: ${totalCount})`);
             
             // Add folders from this page
             allFolders.push(...items);
@@ -2871,7 +2990,7 @@ async function fetchAllFolders(pageHookToken) {
             currentPage++;
         }
         
-        console.log(`[DEBUG] Fetched all ${allFolders.length} folders from ${currentPage} page(s)`);
+        debugLog(`[DEBUG] Fetched all ${allFolders.length} folders from ${currentPage} page(s)`);
         
         // Return in same format as original API response
         return {
@@ -4043,18 +4162,27 @@ function createNotification(title, message, type = 'success') {
     `;
     notification.innerHTML = `
         <div style="width: 28px; height: 28px; border-radius: 50%; background: ${config.iconBg}; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; flex-shrink: 0;">${config.icon}</div>
-        <div>
+        <div style="flex: 1; min-width: 0;">
             <div style="font-weight: 600; margin-bottom: 0.25rem; color: #1e3a5f;">${title}</div>
             <div style="font-size: 0.875rem; color: #4a5568;">${message}</div>
         </div>
+        <button type="button" class="cpm-notification-close" aria-label="Close" style="flex-shrink: 0; width: 24px; height: 24px; border: none; background: transparent; color: #718096; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; padding: 0;">&times;</button>
     `;
 
     document.body.appendChild(notification);
 
-    setTimeout(() => {
+    let hideTimeoutId = setTimeout(() => {
+        hideTimeoutId = null;
         notification.style.animation = 'slideOut 0.3s ease-in';
         setTimeout(() => notification.remove(), 300);
     }, 4000);
+
+    notification.querySelector('.cpm-notification-close')?.addEventListener('click', () => {
+        if (hideTimeoutId) clearTimeout(hideTimeoutId);
+        hideTimeoutId = null;
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+    });
 
     if (!document.getElementById('cpm-notification-styles')) {
         const style = document.createElement('style');
@@ -4067,6 +4195,10 @@ function createNotification(title, message, type = 'success') {
             @keyframes slideOut {
                 from { transform: translateX(0); opacity: 1; }
                 to { transform: translateX(400px); opacity: 0; }
+            }
+            .cpm-notification-close:hover {
+                background: rgba(0,0,0,0.06) !important;
+                color: #2d3748 !important;
             }
         `;
         document.head.appendChild(style);

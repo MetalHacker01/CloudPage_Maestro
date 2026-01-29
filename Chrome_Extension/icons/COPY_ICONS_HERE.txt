@@ -1,0 +1,7 @@
+Copy the icon files from the main Chrome extension into this folder:
+
+Source: Chrome_Extension/icons/
+Files needed: icon-16.png, icon-48.png, icon-128.png
+Optional: CP_Maestro_Logo_Colored.png (for web_accessible_resources)
+
+Then load this folder (Chrome_Extension_v6) as an unpacked extension in chrome://extensions/.
