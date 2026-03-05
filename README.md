@@ -72,7 +72,7 @@ CloudPage Maestro is a Chrome Extension for managing Salesforce Marketing Cloud 
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) in your browser
 2. Open the Tampermonkey dashboard and create a new script
-3. Paste the contents of `tampermonkey_cloudpages_optimized_v5.user.js`
+3. Paste the contents of `tampermonkey_cloudpages_maestro.user.js`
 4. Save and go to SFMC CloudPages — script auto-activates
 
 ---
@@ -101,7 +101,7 @@ Unpublish_LP_Script/
 │   └── icons/                  # Extension icons
 │
 ├── DOCUMENTATION.html          # Full documentation (open in browser)
-├── tampermonkey_cloudpages_optimized_v5.user.js  # Tampermonkey script
+├── tampermonkey_cloudpages_maestro.user.js  # Tampermonkey script
 ├── CP_Maestro_Logo.png         # Logo
 ├── README.md                   # This file
 └── LICENSE
