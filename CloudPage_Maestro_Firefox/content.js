@@ -4398,21 +4398,22 @@ async function exportAllToCSV() {
     const pageHookToken = tokenResponse?.tokens?.pageHookToken ?? null;
     const appcoreToken = tokenResponse?.tokens?.appcoreToken ?? null;
 
-    // Show progress overlay
+    // Theme-aware overlay — reuses the styles registered by Download All so the
+    // export modal also tracks the panel's dark/light mode.
+    cpmEnsureDownloadOverlayStyles();
+    const panel = document.getElementById('cloudpages-manager');
+    const isDark = !!panel?.classList.contains('cpm-dark');
     const overlay = document.createElement('div');
     overlay.id = 'cpm-export-overlay';
-    overlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(3,45,96,0.7);z-index:20000;display:flex;align-items:center;justify-content:center;border-radius:inherit;';
+    overlay.className = isDark ? 'cpm-dl-overlay cpm-dark' : 'cpm-dl-overlay';
     overlay.innerHTML = `
-        <div style="background:#fff;border-radius:6px;padding:28px 32px;min-width:340px;max-width:90%;box-shadow:0 8px 32px rgba(3,45,96,0.25);text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-            <div style="font-size:15px;font-weight:600;color:#032d60;margin-bottom:6px;">Exporting All Assets</div>
-            <div id="cpm-export-progress-text" style="font-size:13px;color:#706e6b;margin-bottom:16px;">Initializing...</div>
-            <div style="background:#e5e5e5;border-radius:4px;height:8px;overflow:hidden;margin-bottom:16px;">
-                <div id="cpm-export-progress-bar" style="height:100%;background:#0176d3;width:0%;transition:width 0.3s ease;border-radius:4px;"></div>
-            </div>
-            <button id="cpm-export-cancel" style="background:none;border:1px solid #dddbda;border-radius:4px;padding:6px 16px;font-size:12px;color:#706e6b;cursor:pointer;">Cancel</button>
+        <div class="cpm-dl-dialog">
+            <div class="cpm-dl-title">Exporting All Assets</div>
+            <div class="cpm-dl-text" id="cpm-export-progress-text">Initializing...</div>
+            <div class="cpm-dl-track"><div id="cpm-export-progress-bar" class="cpm-dl-bar"></div></div>
+            <button id="cpm-export-cancel" class="cpm-dl-cancel">Cancel</button>
         </div>
     `;
-    const panel = document.getElementById('cloudpages-manager');
     if (panel) panel.appendChild(overlay);
 
     let cancelled = false;
