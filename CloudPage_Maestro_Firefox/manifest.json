@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "CloudPage Maestro",
+  "version": "1.0.0",
+  "description": "Batch manage Salesforce Marketing Cloud CloudPages — publish, unpublish, filter, sort, and export with a single click.",
+  "author": "Aldorino Rrushi",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "cloudpage-maestro@aldorinoRrushi",
+      "strict_min_version": "109.0"
+    }
+  },
+
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+
+  "action": {
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "CloudPage Maestro"
+  },
+
+  "permissions": [
+    "storage",
+    "webRequest"
+  ],
+
+  "host_permissions": [
+    "https://*.marketingcloudapps.com/*",
+    "https://*.exacttarget.com/*",
+    "https://*.sfmc-content.com/*"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.exacttarget.com/*",
+        "https://*.marketingcloudapps.com/*"
+      ],
+      "js": ["lib/jszip.min.js", "content.js"],
+      "run_at": "document_end"
+    }
+  ],
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/icon-48.png", "icons/CP_Maestro_Logo.png", "icons/CP_Maestro_Logo_Colored.png"],
+      "matches": [
+        "https://*.exacttarget.com/*",
+        "https://*.marketingcloudapps.com/*"
+      ]
+    }
+  ]
+}

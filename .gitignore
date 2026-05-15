@@ -20,6 +20,9 @@ node_modules/
 .env
 .env.local
 
+# Claude Code working files
+.claude/
+
 # Exclude unnecessary files from workspace
 additional.md
 assetList.json

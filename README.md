@@ -1,167 +1,143 @@
 # CloudPage Maestro
 
 <p align="center">
-  <img src="CP_Maestro_Logo.png" alt="CloudPage Maestro Logo" width="200">
-</p>
-
-<h1 align="center">CloudPage Maestro</h1>
-
-<p align="center">
-  <strong>Advanced Salesforce Marketing Cloud (SFMC) CloudPages Management Tool</strong>
+  <img src="CP_Maestro_Logo.png" alt="CloudPage Maestro" width="180">
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#documentation">Documentation</a>
+  <strong>A browser extension for batch-managing Salesforce Marketing Cloud CloudPages.</strong>
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> ·
+  <a href="#installation">Installation</a> ·
+  <a href="DOCUMENTATION.html">Documentation</a> ·
+  <a href="#under-the-hood">Under the Hood</a>
 </p>
 
 ---
 
 ## Overview
 
-CloudPage Maestro is a Chrome Extension for managing Salesforce Marketing Cloud CloudPages — batch publish/unpublish, search, filter, sort, enrich, and export assets directly from the SFMC interface.
+CloudPage Maestro is a Chrome / Firefox extension that brings batch operations to Salesforce Marketing Cloud's CloudPages — publish, unpublish, move, search, sort, enrich, download, and export landing pages and code resources without leaving SFMC.
 
-### Available Versions
-
-- **Chrome Extension** – Recommended: auto token capture, batch operations, resizable panel, enriched export, sortable columns
-- **Tampermonkey Script** – Universal userscript for all browsers
-
----
+It runs entirely in the browser. No backend, no OAuth dance, no server-side credentials. It rides the user's existing SFMC session and the platform's internal `/cloud/fuelapi/` proxy.
 
 ## Features
 
-### Core Features
-- **Dual-Token System** – Automatic authentication token capture; background iframe auto-capture on load
-- **Asset Management** – View, search, filter, and manage CloudPages and Code Resources
-- **Download System** – Download HTML from landing pages and content from code resources
-- **Real-time Enrichment** – Fetch asset details, status, and site info on-demand
-- **Publish / Unpublish** – Safely publish or unpublish landing pages with batch support
-- **Smart Caching** – Local caching with configurable TTL (5 minutes)
-- **SLDS-Aligned UI** – Clean, modern, Salesforce Lightning–style design
+### Core
+- **Bulk publish / unpublish / move** for landing pages and code resources
+- **Search** across name, content, description, folder
+- **Filter** by asset type (Landing Pages, JSON, JavaScript, CSS)
+- **Sort** by clicking any column header
+- **Folder picker** for batch moves with the full SFMC category tree
+- **Resizable panel** — drag the left edge, width persists across sessions
+- **Dark / Light mode** with a theme toggle in the header
+- **Keyboard shortcuts** — `Esc` to close, `Ctrl+Shift+F` to focus search, `Ctrl+A` to select all
 
-### Chrome Extension Features
-- **Auto Token Capture** – Hidden iframes automatically capture both tokens on page load
-- **Auto-Refresh on Open** – Panel auto-refreshes data when opened if landing pages are not yet enriched
-- **Dark / Light Mode** – Theme toggle persisted across sessions
-- **URL Preview** – Hover over a landing page URL to see a live iframe preview
-- **Batch Operations** – Select multiple assets for bulk publish/unpublish/move
-- **Folder Management** – Visual folder tree picker with search (full dark/light theme support)
-- **Enhanced Search** – Content Builder query API with pagination
-- **Token Badges** – Live "Search Ready" / "Publish Ready" status indicators
-- **Pagination** – 100 items per page with total count display; fully theme-aware
-- **Enriched Export** – Export to CSV or JSON with status, URL, modified date, folder path, customerKey
-- **Batch Progress Bar** – Real-time progress indicator during bulk operations
-- **Sortable Columns** – Click any column header to sort ascending/descending
-- **Resizable Panel** – Drag the left edge to adjust panel width (persisted in storage)
-- **Keyboard Shortcuts** – `Escape` closes panel; `Ctrl+Shift+F` focuses search; `Ctrl+A` selects all
-- **About** – Author info with LinkedIn, Portfolio, and GitHub links
-- **CORS Bypass** – Background service worker architecture for API calls
+### Speed
+- **Cookie-only auth** for reads — no CSRF token gymnastics, no ghost-tab capture, no 15-second wait on panel open
+- **Bulk V2 endpoint** populates status + URL for every landing page in one call
+- **Concurrent enrichment** for items the V2 endpoint doesn't cover (batches of 10)
+- **Concurrent batch operations** (5 in-flight for writes)
+- **Smart caching** with TTL on enrichment results
 
----
+### Export & Download
+- **Export All to CSV** — every asset across every page, fully enriched, ready for Excel
+- **Download All** dropdown — two modes:
+  - **All files + folder tree** — every landing page HTML, every code resource (JS/CSS/JSON), packaged in a ZIP with the full SFMC category structure preserved
+  - **HTML only (flat)** — just the landing page HTML files in a single folder
+- **Single-asset download** — click the download icon on any row
+
+### Quality of life
+- **Real-time token status** — badges actively probe the server and show "OK / Stale / Missing", click to re-probe
+- **Auto-recovery on 401** — when a publish token expires mid-action, the extension recaptures it and retries silently
+- **URL preview** — hover any published landing page URL to see a live iframe preview
+- **Progress toast** for batch operations with theme-aware visuals
+- **Progressive row reveal** — table cells fade in row-by-row so the page feels alive
 
 ## Installation
 
-### Chrome Extension
+### Chrome (recommended)
 
 1. Clone or download this repository
-2. Open Chrome and go to `chrome://extensions/`
-3. Enable **Developer mode** (toggle top-right)
+2. Open `chrome://extensions/`
+3. Enable **Developer mode** (top-right toggle)
 4. Click **Load unpacked**
-5. Select the `Chrome_Extension_CPM_ExpAll/` folder
-6. Navigate to SFMC (exacttarget.com or marketingcloudapps.com) — extension auto-activates
+5. Select the [`CloudPage_Maestro_Chrome/`](CloudPage_Maestro_Chrome/) folder
+6. Navigate to your SFMC instance (`*.exacttarget.com` or `*.marketingcloudapps.com`) — the extension auto-activates
 
-### Tampermonkey Script
+### Firefox
 
-1. Install [Tampermonkey](https://www.tampermonkey.net/) in your browser
-2. Open the Tampermonkey dashboard and create a new script
-3. Paste the contents of `tampermonkey_cloudpages_maestro.user.js`
-4. Save and go to SFMC CloudPages — script auto-activates
+1. Open `about:debugging#/runtime/this-firefox`
+2. Click **Load Temporary Add-on**
+3. Select [`CloudPage_Maestro_Firefox/manifest.json`](CloudPage_Maestro_Firefox/manifest.json)
+4. Navigate to SFMC — the extension auto-activates
 
----
+### Tampermonkey (legacy, kept for portability)
 
-## Documentation
-
-**[DOCUMENTATION.html](DOCUMENTATION.html)** – Open in a browser for full documentation.
-
-Includes:
-- Installation guides for Chrome Extension and Tampermonkey
-- API endpoint references
-- Feature walkthroughs and code examples
-- Troubleshooting and debug mode
-- Technical specifications
-
----
+A Tampermonkey userscript variant lives at [`tampermonkey_cloudpages_maestro.user.js`](tampermonkey_cloudpages_maestro.user.js). It predates the cookie-only auth migration and is slightly behind on features. Use the Chrome or Firefox extension as the primary install path. The userscript is useful on machines where extension installation is restricted.
 
 ## Repository Structure
 
 ```
-CloudPage_Maestro/
-├── Chrome_Extension_CPM_ExpAll/  # Chrome Extension (production)
-│   ├── background.js             # Service worker (token capture, API proxy)
-│   ├── content.js                # Main content script (UI, search, batch actions)
-│   ├── manifest.json             # Extension config (v1.0.0)
-│   └── icons/                    # Extension icons
+CloudPages_Maestro/
+├── CloudPage_Maestro_Chrome/        # Chrome extension (production)
+│   ├── manifest.json                # MV3, v1.0.0
+│   ├── background.js                # Token capture + API proxy (CORS bypass)
+│   ├── content.js                   # UI, state, all interactions (~6,400 lines)
+│   ├── lib/
+│   │   └── jszip.min.js             # ZIP archive builder (Download All)
+│   └── icons/
 │
-├── Chrome_Extension_CPM/         # Chrome Extension (older version, archived)
+├── CloudPage_Maestro_Firefox/       # Firefox extension (gecko manifest)
 │
-├── DOCUMENTATION.html            # Full documentation (open in browser)
-├── tampermonkey_cloudpages_maestro.user.js  # Tampermonkey script
-├── CP_Maestro_Logo.png           # Logo
-├── README.md                     # This file
-└── LICENSE
+├── tampermonkey_cloudpages_maestro.user.js  # Legacy userscript variant
+│
+├── DOCUMENTATION.html               # Full documentation (open in browser)
+├── DESIGN_SYSTEM.md                 # Documentation styling spec
+├── README.md
+├── LICENSE
+├── CP_Maestro_Logo.png
+└── archive/                         # Earlier iterations preserved for history
 ```
 
----
+## Under the Hood
 
-## Quick Start
+### Auth model — cookie-only `/cloud/fuelapi/` proxy
 
-```bash
-# 1. Clone repo
-git clone https://github.com/MetalHacker01/CloudPage_Maestro.git
+The extension does not capture or rotate CSRF tokens for read operations. Instead it routes every read through `https://mc.{stack}.exacttarget.com/cloud/fuelapi/...`, an internal SFMC proxy that accepts the user's session cookies. The migration from the older "ghost tab" CSRF pattern eliminated a 15-second startup wait and removed entire categories of failure (stale tokens, blocked redirects, popup flashes).
 
-# 2. Load Chrome_Extension_CPM_ExpAll/ in chrome://extensions/ (Developer mode → Load unpacked)
-# 3. Open SFMC CloudPages
-```
+Writes (publish / unpublish / move) still use a captured CSRF token. If the token is stale, the extension auto-recaptures it via a hidden iframe and retries the write once. Users see a brief "Token expired — refreshing" toast and the operation succeeds.
 
----
+### Architecture
+- **manifest** — MV3 with `storage` + `webRequest` permissions; host permissions for `*.exacttarget.com`, `*.marketingcloudapps.com`, `*.sfmc-content.com`
+- **background.js** — service worker. Listens for `x-csrf-token` headers on outbound SFMC requests and stores them in `chrome.storage.local`. Acts as a fetch proxy for the content script (with `credentials: 'include'` so cookies flow on cross-origin reads).
+- **content.js** — single ~6,400-line content script. Injects a fixed-position panel into the SFMC page, owns all UI, state (via `window.CPM_STATE`), API calls, and rendering.
 
-## Technical Details
-
-### Chrome Extension
-- **Version**: 1.0.0
-- **Manifest**: 3
-- **Content script**: content.js (~5,000 lines)
-- **Permissions**: storage, webRequest; host permissions for SFMC domains
-
-### Tampermonkey
-- **Version**: 5.0
-- **APIs**: GM_xmlhttpRequest, GM_addStyle
-
----
+### Performance characteristics
+- Initial panel load: under 2 seconds on a 700-asset dev account
+- Refresh after publish: under 5 seconds (was 60+ seconds before the cookie-only migration)
+- Concurrent reads capped at 10 in-flight; writes at 5
+- Enrichment results cached for 5 minutes; the V2 bulk-endpoint response front-loads status / URL / siteId so per-item enrichment is rare
 
 ## Limitations
 
-- Requires an active SFMC session (tokens expire with session)
-- SFMC API rate limits apply
-- Works within the current Business Unit only
-- Unofficial community tool — not supported by Salesforce
-
----
+- Requires an active SFMC session — the extension piggybacks on browser cookies
+- Subject to SFMC API rate limits (rare in practice; ~10 concurrent reads is comfortable)
+- Works within the current Business Unit only — switch BUs in SFMC and refresh the panel
+- Unofficial community tool — not affiliated with or supported by Salesforce
 
 ## License
 
-See [LICENSE](LICENSE). Unofficial tool, use at your own risk.
-
----
+See [LICENSE](LICENSE). Use at your own risk.
 
 ## Credits
 
-**Developer**: Aldorino Rrushi ([MetalHacker01](https://github.com/MetalHacker01))
-**Portfolio**: [martech-maestro-folio-sroh.vercel.app](https://martech-maestro-folio-sroh.vercel.app/)
-**Version**: 1.0.0
-**Last Updated**: March 2026
+**Author:** Aldorino Rrushi ([@MetalHacker01](https://github.com/MetalHacker01)) · [Portfolio](https://martech-maestro-folio-sroh.vercel.app/)
+
+**Version:** 1.0.0 · **Updated:** May 2026
 
 ---
 
-<p align="center">Made with love for the SFMC Community</p>
+<p align="center">For the SFMC community.</p>
