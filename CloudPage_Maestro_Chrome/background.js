@@ -94,7 +94,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ success: true, data: response });
       })
       .catch(error => {
-        console.error('[CloudPage Maestro] API request failed:', error);
+        // Already logged at the point of failure inside makeAPIRequest.
+        // Just forward the result to the content script without re-logging.
         sendResponse({ success: false, error: error.message });
       });
     return true;
@@ -139,7 +140,9 @@ async function makeAPIRequest(config) {
 
     if (!response.ok) {
       const text = await response.text();
-      console.error('[CloudPage Maestro] Response error:', response.status, text);
+      // HTTP non-2xx is handled by the content script (retry on 401, fallback paths,
+      // graceful empty results, etc.). Log as warn — it's not a bug.
+      console.warn('[CloudPage Maestro] HTTP', response.status, 'from', config.url);
       throw new Error(`HTTP ${response.status}: ${text}`);
     }
 
@@ -173,7 +176,12 @@ async function makeAPIRequest(config) {
     }
     return { ok: true };
   } catch (error) {
-    console.error('[CloudPage Maestro] API request error:', error);
+    // HTTP errors are already logged at the response.ok check above. Only log
+    // here for network-level failures (fetch rejection, DNS, etc.) which arrive
+    // without an "HTTP NNN:" prefix.
+    if (!String(error.message || '').startsWith('HTTP ')) {
+      console.warn('[CloudPage Maestro] Network error during', config.url, '—', error.message);
+    }
     throw error;
   }
 }
