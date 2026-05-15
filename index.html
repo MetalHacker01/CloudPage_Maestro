@@ -87,6 +87,12 @@ body {
   display: block;
   filter: contrast(1.05);
 }
+/* Light theme: the logo PNG is white on transparent, so it disappears on
+   the white sidebar. Invert turns the white pixels dark; the logo's detail
+   reads clearly against the paper background. */
+:root[data-theme="light"] .sidebar-logo {
+  filter: invert(1) contrast(1.05);
+}
 .sidebar-title {
   font-size: var(--fs-18);
   font-weight: 600;
