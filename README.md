@@ -11,7 +11,7 @@
 <p align="center">
   <a href="#features">Features</a> ·
   <a href="#installation">Installation</a> ·
-  <a href="DOCUMENTATION.html">Documentation</a> ·
+  <a href="index.html">Documentation</a> ·
   <a href="#under-the-hood">Under the Hood</a>
 </p>
 
@@ -94,7 +94,7 @@ CloudPages_Maestro/
 │
 ├── tampermonkey_cloudpages_maestro.user.js  # Legacy userscript variant
 │
-├── DOCUMENTATION.html               # Full documentation (open in browser)
+├── index.html               # Full documentation (open in browser)
 ├── DESIGN_SYSTEM.md                 # Documentation styling spec
 ├── README.md
 ├── LICENSE
