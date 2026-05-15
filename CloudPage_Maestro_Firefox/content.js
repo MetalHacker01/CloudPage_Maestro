@@ -389,14 +389,16 @@ function injectTokenCaptureIframes(stack, onComplete) {
 
             // Cookie-only proxy migration: pageHookToken is no longer required for reads.
             // Only block on missing appcoreToken (still needed for publish/unpublish + cloud-pages reads).
+            // Use console.log (not warn) — Chrome shows stack traces for warns by default
+            // and this is the expected bootstrap path, not an error.
             if (!appcoreToken) {
-                console.warn('[CloudPage Maestro] Missing appcoreToken — auto-capturing via iframe');
-                showNotification('Auto-capturing publish token...', 'warning');
+                console.log('[CloudPage Maestro] appcoreToken not in storage yet — running silent iframe capture');
                 injectTokenCaptureIframes(stack, function(capturedPH, capturedAC) {
                     var finalPH = capturedPH || pageHookToken;
                     var finalAC = capturedAC || appcoreToken;
                     if (!finalAC) {
-                        showNotification('Publish token capture failed. Navigate to CloudPages in SFMC, then click Refresh. (Listing should still work via session.)', 'warning');
+                        // Genuinely a problem now — silent iframe capture failed.
+                        showNotification('Publish token capture failed. Navigate to CloudPages in SFMC, then click Refresh. (Listing still works via session.)', 'warning');
                     }
                     createMainUI(finalPH, finalAC);
                 });
