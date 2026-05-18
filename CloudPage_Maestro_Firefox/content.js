@@ -3303,38 +3303,40 @@ async function enrichVisibleItems(appcoreToken) {
     
     const itemsToEnrich = [];
     
+    let cachedCount = 0;
+
     visibleRows.forEach(row => {
         const itemId = row.dataset.itemId;
         const item = window.CPM_STATE.allAssets.find(a => String(a.id) === String(itemId));
-        
-        if (item) {
-            // Skip landing pages that were already enriched from the V2 API
-            if (item.isV2Enriched) return;
+        if (!item) return;
 
-            // Only check cache - if cache was cleared (on refresh), item will be re-enriched
-            const cached = window.CPM_STATE.getCachedEnrichment(parseInt(itemId));
-            if (!cached) {
-                itemsToEnrich.push(item);
-            } else {
-                // Apply cached data to item
-                item.siteId = cached.siteId;
-                item.pageId = cached.pageId;
-                item.status = cached.status;
-                item.url = cached.url;
-            }
+        // Skip landing pages already enriched from the V2 API (loadAllData inline path).
+        if (item.isV2Enriched) return;
+
+        const cached = window.CPM_STATE.getCachedEnrichment(parseInt(itemId));
+        if (!cached) {
+            itemsToEnrich.push(item);
+            return;
         }
+
+        // Apply cached data to the item AND patch the DOM row immediately.
+        // Previously the patch only ran in the "all items cached" early-return,
+        // so partially-cached searches (some items cached, some new) left the
+        // cached rows un-enriched in the DOM until the user clicked Refresh.
+        // Repro: search "abc" -> all enrich. Search "abcd" -> overlapping items
+        // are cache hits and stayed un-enriched until cache was cleared.
+        item.siteId = cached.siteId;
+        item.pageId = cached.pageId;
+        item.status = cached.status;
+        item.url = cached.url;
+        patchEnrichedRow(item);
+        cachedCount++;
     });
-    
-    console.log('[CloudPage Maestro] Enriching', itemsToEnrich.length, 'visible items (', visibleRows.length - itemsToEnrich.length, 'from cache)');
-    
+
+    console.log('[CloudPage Maestro] Enriching', itemsToEnrich.length, 'visible items (', cachedCount, 'from cache, already patched)');
+
     if (itemsToEnrich.length === 0) {
         console.log('[CloudPage Maestro] All visible items already enriched');
-        // Patch cached rows in-place — no full re-render
-        visibleRows.forEach(row => {
-            const itemId = row.dataset.itemId;
-            const item = window.CPM_STATE.allAssets.find(a => String(a.id) === String(itemId));
-            if (item) patchEnrichedRow(item);
-        });
         return;
     }
     
