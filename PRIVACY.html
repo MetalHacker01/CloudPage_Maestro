@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy · CloudPage Maestro</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/css/iconoir.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --ff-sans: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ff-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+:root[data-theme="light"] {
+  --bg-0: #fafaf7; --bg-1: #ffffff; --bg-2: #f3f2ed;
+  --border-1: #e7e5dd; --border-2: #d4d1c6;
+  --text-1: #0f1115; --text-2: #4b5260; --text-3: #7a7f8a;
+  --accent: #0176d3; --accent-hi: #014a8a; --accent-tint: rgba(1, 118, 211, 0.08);
+  --grid-line: rgba(15,17,21,0.03);
+}
+:root[data-theme="dark"] {
+  --bg-0: #0a0b0d; --bg-1: #111316; --bg-2: #181b20;
+  --border-1: #1f242c; --border-2: #2c333d;
+  --text-1: #e8eaed; --text-2: #a8afb8; --text-3: #6b727b;
+  --accent: #58a6ff; --accent-hi: #7ba6ff; --accent-tint: rgba(88, 166, 255, 0.12);
+  --grid-line: rgba(255,255,255,0.02);
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--ff-sans);
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--text-1);
+  background-color: var(--bg-0);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: var(--accent-tint); color: var(--text-1); }
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg-1);
+  border: 1px solid var(--border-1);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-1);
+  font-size: 1rem;
+  z-index: 200;
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+.theme-toggle:hover { border-color: var(--border-2); transform: translateY(-1px); }
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 64px 32px 96px;
+}
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--ff-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  text-decoration: none;
+  margin-bottom: 24px;
+  transition: color 120ms ease;
+}
+.brand-link:hover { color: var(--accent); }
+.brand-link img { width: 24px; height: 24px; }
+:root[data-theme="light"] .brand-link img { filter: invert(1) contrast(1.05); }
+h1 {
+  font-size: 2.375rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text-1);
+  margin-bottom: 12px;
+}
+.subtitle {
+  font-family: var(--ff-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 48px;
+}
+h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--text-1);
+  margin: 40px 0 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-1);
+}
+section:first-of-type h2 {
+  margin-top: 16px;
+  padding-top: 0;
+  border-top: 0;
+}
+p {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--text-2);
+  margin-bottom: 16px;
+}
+p strong { color: var(--text-1); font-weight: 600; }
+code {
+  font-family: var(--ff-mono);
+  font-size: 0.85em;
+  font-weight: 500;
+  background: var(--bg-1);
+  color: var(--text-1);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-1);
+}
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+a:hover { color: var(--accent-hi); border-bottom-color: currentColor; }
+ul { margin: 12px 0 16px; padding-left: 24px; color: var(--text-2); }
+li { margin: 6px 0; line-height: 1.65; }
+li::marker { color: var(--text-3); }
+.footer-meta {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-1);
+  font-family: var(--ff-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.footer-meta a { color: var(--text-2); }
+@media (max-width: 640px) {
+  .container { padding: 40px 20px 64px; }
+  h1 { font-size: 1.875rem; }
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+  <i class="iconoir-half-moon"></i>
+</button>
+
+<div class="container">
+
+<a href="index.html" class="brand-link">
+  <img src="CP_Maestro_Logo.png" alt="CloudPage Maestro">
+  CloudPage Maestro · Back to docs
+</a>
+
+<h1>Privacy Policy</h1>
+<div class="subtitle">Last updated: May 2026</div>
+
+<section>
+  <h2>1. What this extension does</h2>
+  <p>This privacy policy applies to <strong>CloudPage Maestro</strong>, a Chrome and Firefox extension published by Aldorino Rrushi. The extension adds a panel inside Salesforce Marketing Cloud (SFMC) that helps users manage their own SFMC CloudPages assets in bulk (publish, unpublish, search, move, download, export). It only runs on SFMC domains (<code>*.exacttarget.com</code>, <code>*.marketingcloudapps.com</code>, <code>*.sfmc-content.com</code>) and only when the user is already signed into SFMC.</p>
+</section>
+
+<section>
+  <h2>2. What data is accessed</h2>
+  <p>The extension reads data from the user's own active SFMC session: landing pages, code resources, folders, asset metadata, statuses, and URLs. All API calls go to the user's own SFMC instance using the user's existing browser cookies. No data leaves the user's browser.</p>
+</section>
+
+<section>
+  <h2>3. CSRF tokens</h2>
+  <p>For write operations (publish, unpublish, move), SFMC requires a short-lived <code>x-csrf-token</code> header. The extension passively reads this header from outbound traffic the user's own SFMC tab is already sending, and stores it in <code>chrome.storage.local</code> for the duration of the session. The token is a session-scoped CSRF token issued by SFMC, not a credential. It cannot be used outside the user's logged-in browser. Tokens are never transmitted to any third party.</p>
+</section>
+
+<section>
+  <h2>4. What data is sent off-device</h2>
+  <p><strong>None.</strong> All API requests go directly from the browser to the user's SFMC instance. The extension does not contact any server controlled by the developer. There is no analytics, no telemetry, no remote logging.</p>
+</section>
+
+<section>
+  <h2>5. Local storage</h2>
+  <p><code>chrome.storage.local</code> is used to persist:</p>
+  <ul>
+    <li>UI preferences (dark/light theme, panel width, panel-open state, last filter)</li>
+    <li>Short-lived CSRF tokens (as described in section 3)</li>
+    <li>5-minute enrichment cache for asset status/URL lookups</li>
+  </ul>
+  <p>Storage is cleared when the user uninstalls the extension or clears Chrome storage manually.</p>
+</section>
+
+<section>
+  <h2>6. Third-party services</h2>
+  <p>None. The extension does not load remote code, does not include analytics, and does not call any developer-controlled endpoint. The only bundled third-party library is <a href="https://stuk.github.io/jszip/">JSZip</a> 3.10.1, included locally to build ZIP archives for the Download All feature. It runs entirely in the user's browser.</p>
+</section>
+
+<section>
+  <h2>7. Children</h2>
+  <p>The extension is a developer tool intended for Salesforce Marketing Cloud users. It is not directed at children.</p>
+</section>
+
+<section>
+  <h2>8. Changes to this policy</h2>
+  <p>This policy may be updated when extension functionality changes. The "Last updated" date will reflect material changes. The latest version is always available at this URL.</p>
+</section>
+
+<section>
+  <h2>9. Contact</h2>
+  <p>Aldorino Rrushi</p>
+  <ul>
+    <li>Email: <a href="mailto:aldorino.rrushi@gmail.com">aldorino.rrushi@gmail.com</a></li>
+    <li>GitHub: <a href="https://github.com/MetalHacker01">@MetalHacker01</a></li>
+    <li>Issues: <a href="https://github.com/MetalHacker01/CloudPage_Maestro/issues">GitHub Issues</a></li>
+  </ul>
+</section>
+
+<div class="footer-meta">
+  CloudPage Maestro is an unofficial community tool. It is not affiliated with, endorsed by, or supported by Salesforce. &copy; 2026 Aldorino Rrushi.
+</div>
+
+</div>
+
+<script>
+  const THEME_KEY = 'cpm_docs_theme';
+  const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem(THEME_KEY, next);
+    const icon = document.querySelector('.theme-toggle i');
+    if (icon) icon.className = next === 'dark' ? 'iconoir-half-moon' : 'iconoir-sun-light';
+  }
+  (() => {
+    const icon = document.querySelector('.theme-toggle i');
+    if (icon) icon.className = savedTheme === 'dark' ? 'iconoir-half-moon' : 'iconoir-sun-light';
+  })();
+</script>
+
+</body>
+</html>

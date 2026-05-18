@@ -69,3 +69,4 @@ versions/
 # Keep only production versions
 # Include: Chrome_Extension/, Final_Version/tampermonkey_cloudpages_optimized_v5.user.js, 
 # Final_Version/DOCUMENTATION_NEW.html, Final_Version/*.png, README.md, LICENSE
+dist/
