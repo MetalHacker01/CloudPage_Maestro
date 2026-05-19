@@ -42,6 +42,100 @@ console.log('   Debug Mode:', DEBUG_MODE ? 'ENABLED ✓' : 'DISABLED (production
 console.log('═══════════════════════════════════════════════════════════');
 
 
+// =============================================================
+// PEER EXTENSION COORDINATION (CPM <-> SFMC Scout)
+// =============================================================
+// Set our presence marker immediately so a sibling extension can detect us
+// even before our panel renders. The marker is just an attribute on <html>.
+try { document.documentElement.setAttribute('data-cpm-loaded', '1'); } catch (_) {}
+
+// Coordination state
+const CPM_PEER = {
+    detected: false,
+    paused: false,
+    cleanup: []
+};
+
+function cpmDetectPeer() {
+    return document.documentElement.hasAttribute('data-scout-loaded');
+}
+
+function cpmApplyDualMode() {
+    if (CPM_PEER.detected) return;
+    CPM_PEER.detected = true;
+    const toggle = document.getElementById('cpm-toggle-btn');
+    if (toggle) toggle.classList.add('cpm-compact');
+}
+
+function cpmPauseForPeer() {
+    if (CPM_PEER.paused) return;
+    CPM_PEER.paused = true;
+    if (window.CPM_STATE?._tokenProbeInterval) {
+        clearInterval(window.CPM_STATE._tokenProbeInterval);
+        window.CPM_STATE._tokenProbeInterval = null;
+    }
+    // Mutual exclusion: close our panel if it's open
+    const mgr = document.getElementById('cloudpages-manager');
+    if (mgr && !mgr.classList.contains('minimized')) {
+        mgr.classList.add('minimized');
+        if (window.CPM_STATE) window.CPM_STATE.isPanelOpen = false;
+    }
+    const toggle = document.getElementById('cpm-toggle-btn');
+    if (toggle) {
+        toggle.classList.remove('panel-open');
+        toggle.classList.add('peer-active');
+    }
+    console.log('[CloudPage Maestro] Paused while SFMC Scout is active');
+}
+
+function cpmResumeFromPeer() {
+    if (!CPM_PEER.paused) return;
+    CPM_PEER.paused = false;
+    if (window.CPM_STATE && !window.CPM_STATE._tokenProbeInterval) {
+        window.CPM_STATE._tokenProbeInterval = setInterval(() => {
+            if (typeof verifyTokenBadges === 'function') verifyTokenBadges();
+        }, 4 * 60 * 1000);
+    }
+    const toggle = document.getElementById('cpm-toggle-btn');
+    if (toggle) toggle.classList.remove('peer-active');
+    console.log('[CloudPage Maestro] Resumed (Scout panel closed)');
+}
+
+function cpmAnnouncePanelState(isOpen) {
+    try {
+        document.dispatchEvent(new CustomEvent(
+            isOpen ? 'sfmc-panel:open' : 'sfmc-panel:close',
+            { detail: { extension: 'cpm' } }
+        ));
+    } catch (_) {}
+}
+
+function cpmSetupPeerCoordination() {
+    // Run detection twice — once after a short delay (peer may load slightly
+    // before or after us), once later in case the peer is slow to bootstrap.
+    const check = () => {
+        if (cpmDetectPeer()) cpmApplyDualMode();
+    };
+    setTimeout(check, 400);
+    setTimeout(check, 1500);
+
+    // Listen for the peer's panel open/close announcements
+    const onOpen = (e) => {
+        if (e?.detail?.extension === 'cpm') return;  // ignore our own
+        cpmPauseForPeer();
+    };
+    const onClose = (e) => {
+        if (e?.detail?.extension === 'cpm') return;
+        cpmResumeFromPeer();
+    };
+    document.addEventListener('sfmc-panel:open', onOpen);
+    document.addEventListener('sfmc-panel:close', onClose);
+    CPM_PEER.cleanup.push(() => {
+        document.removeEventListener('sfmc-panel:open', onOpen);
+        document.removeEventListener('sfmc-panel:close', onClose);
+    });
+}
+
 // Global function - inject hidden iframes to trigger background token capture
 // Must be global because createMainUI (outside IIFE) calls it via button handler
 function injectTokenCaptureIframes(stack, onComplete) {
@@ -859,6 +953,14 @@ function createMainUI(pageHookToken, appcoreToken) {
             window.CPM_STATE.isPanelOpen = isOpen;
             toggleBtn.classList.toggle('panel-open', isOpen);
 
+            // Notify the peer extension (Scout) so it can close its own panel
+            // and pause background work while we are active.
+            cpmAnnouncePanelState(isOpen);
+            if (isOpen && CPM_PEER.paused) {
+                // We opened despite being paused by a peer — peer must have closed already
+                cpmResumeFromPeer();
+            }
+
             // Auto-refresh on open when landing pages are not yet V2-enriched
             if (isOpen) {
                 const hasUnenrichedLP = window.CPM_STATE.allAssets.some(
@@ -875,6 +977,9 @@ function createMainUI(pageHookToken, appcoreToken) {
         }
     });
     document.body.appendChild(toggleBtn);
+
+    // Kick off peer-extension coordination (detect Scout if installed, wire events)
+    cpmSetupPeerCoordination();
     
     // Add toast
     const toast = document.createElement('div');
@@ -1018,6 +1123,69 @@ function addStyles() {
 
         .cpm-toggle-btn.panel-open .cpm-toggle-chev {
             transform: rotate(180deg);
+        }
+
+        /* Compact mode — activates when SFMC Scout is also installed.
+           Shrinks the vertical wordmark tab into a small icon pill so both
+           extensions can sit on the right edge without fighting for space.
+           Position offset (below center) leaves room for Scout above center. */
+        .cpm-toggle-btn.cpm-compact {
+            width: 40px;
+            padding: 0;
+            height: 40px;
+            top: calc(50% + 26px);
+            border-radius: 10px 0 0 10px;
+            gap: 0;
+            justify-content: center;
+            transition: transform 160ms cubic-bezier(0.16,1,0.3,1),
+                        opacity 200ms ease,
+                        box-shadow 200ms ease,
+                        background 160ms ease;
+        }
+        .cpm-toggle-btn.cpm-compact::before {
+            display: none;
+        }
+        .cpm-toggle-btn.cpm-compact .cpm-toggle-chev {
+            display: none;
+        }
+        .cpm-toggle-btn.cpm-compact .cpm-toggle-wordmark {
+            writing-mode: horizontal-tb;
+            transform: none;
+            font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+            font-style: normal;
+            font-size: 11px;
+            font-weight: 700;
+            color: #0176d3;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .cpm-toggle-btn.cpm-compact .cpm-toggle-wordmark::before {
+            content: 'CP';
+        }
+        .cpm-toggle-btn.cpm-compact .cpm-toggle-wordmark {
+            font-size: 0;
+        }
+        .cpm-toggle-btn.cpm-compact .cpm-toggle-wordmark::before {
+            font-size: 12px;
+        }
+        .cpm-toggle-btn.cpm-compact:hover {
+            width: 40px;
+            transform: translateY(-50%) translateX(-2px);
+            box-shadow: -6px 3px 22px rgba(1,118,211,0.22);
+            background: #f8fbff;
+        }
+        .cpm-toggle-btn.cpm-compact.panel-open {
+            box-shadow: -4px 2px 18px rgba(0,0,0,0.1), 0 0 0 2px #0176d3;
+        }
+
+        /* Paused state — Scout's panel is open, so we step aside visually
+           and stop our background intervals. Toggle still clickable. */
+        .cpm-toggle-btn.peer-active {
+            opacity: 0.45;
+            box-shadow: -2px 1px 10px rgba(0,0,0,0.06);
+        }
+        .cpm-toggle-btn.peer-active:hover {
+            opacity: 0.85;
         }
 
         .cpm-toggle-btn:hover .cpm-toggle-chev {
