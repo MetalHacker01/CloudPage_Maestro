@@ -206,7 +206,7 @@ What is in the panel:
 • Universal search. One bar, every module. Results stream in progressively as each source responds, grouped by type with the top matches first.
   - Data Extensions: name, key, folder path (walks Shared Items tree so cross-BU and shared-subfolder DEs show their real path, no more "Unknown Folder").
   - Automations: status pill, last run, color-coded state (Active, Scheduled, Paused, Error, Ready).
-  - Journeys: status pill, version, HTS flag, trigger type, channel. Click to expand an inline detail card with activity count, cumulative population, entry source DE name and ID, entry criteria as a code block, humanized schedule, and an Open in Journey Builder button.
+  - Journeys: status pill, version, HTS flag, trigger type, channel. Click to expand an inline detail card with activity count, cumulative population, entry source DE name and ID, entry criteria as a code block, humanized schedule, an Open in Journey Builder button, and an Audit Log button that opens a timeline modal of every Create, Modify, and Publish event on that journey (editor, version, timestamp, publish status).
   - Content Builder Assets, Emails, and Templates: name, type, folder breadcrumb, asset ID, Email ID. Click to expand: file size and dimensions for uploads, a Preview button for emails and templates that renders the HTML in a modal, an Open File button for uploaded files (clickable CDN link).
   - Activities (SQL Queries, Scripts, Filters, Send Emails, Imports, File Transfers, Data Extracts): folder breadcrumb plus an Update Mode chip (Overwrite, Append, Update) inline on every row.
 
