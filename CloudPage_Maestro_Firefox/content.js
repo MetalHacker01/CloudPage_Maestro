@@ -1746,15 +1746,17 @@ function addStyles() {
 
         .cpm-table {
             width: 100%;
-            min-width: 900px;
             border-collapse: collapse;
             font-size: 13px;
-            table-layout: auto;
+            /* Fixed layout so columns respect declared widths and the Name
+               column can truncate with ellipsis instead of pushing the
+               table wider than the panel and triggering horizontal scroll. */
+            table-layout: fixed;
         }
 
         .cpm-table thead th {
             background: #f3f3f3;
-            padding: 12px 14px;
+            padding: 10px 10px;
             text-align: left;
             font-size: 11px;
             font-weight: 700;
@@ -1763,22 +1765,50 @@ function addStyles() {
             letter-spacing: 0.5px;
             border-bottom: 1px solid #c9c9c9;
         }
-        
-        /* Column Width Optimization */
-        .cpm-table th:nth-child(1) { width: 40px; } /* Checkbox */
-        .cpm-table th:nth-child(2) { width: 80px; } /* ID */
-        .cpm-table th:nth-child(3) { width: auto; min-width: 150px; } /* Name */
-        .cpm-table th:nth-child(4) { width: 180px; } /* Folder */
-        .cpm-table th:nth-child(5) { width: 100px; } /* Type */
-        .cpm-table th:nth-child(6) { width: 100px; } /* Status */
-        .cpm-table th:nth-child(7) { width: 120px; } /* URL */
-        .cpm-table th:nth-child(8) { width: 100px; } /* Modified */
-        .cpm-table th:nth-child(9) { width: 120px; } /* Actions */
+
+        /* Column widths tuned so the entire table fits on a 1366px laptop
+           (panel width ~1160px) without horizontal scroll. Name absorbs
+           any surplus on wider panels. */
+        .cpm-table th:nth-child(1) { width: 36px; }   /* Checkbox */
+        .cpm-table th:nth-child(2) { width: 60px; }   /* ID */
+        .cpm-table th:nth-child(3) { width: auto; }   /* Name (flexes + ellipsis) */
+        .cpm-table th:nth-child(4) { width: 140px; }  /* Folder */
+        .cpm-table th:nth-child(5) { width: 80px; }   /* Type */
+        .cpm-table th:nth-child(6) { width: 95px; }   /* Status */
+        .cpm-table th:nth-child(7) { width: 130px; }  /* URL */
+        .cpm-table th:nth-child(8) { width: 90px; }   /* Modified */
+        .cpm-table th:nth-child(9) { width: 130px; }  /* Actions */
 
         .cpm-table tbody td {
-            padding: 12px 14px;
+            padding: 10px 10px;
             border-bottom: 1px solid #e5e5e5;
             color: #080707;
+            vertical-align: middle;
+        }
+
+        /* Name column: flex layout, the name span truncates with ellipsis
+           when the panel is narrow. Hover the cell to see the full name
+           via the title attribute set on the span. */
+        .cpm-table tbody td:nth-child(3) {
+            overflow: hidden;
+        }
+        .cpm-table tbody td:nth-child(3) > div {
+            min-width: 0;
+            overflow: hidden;
+        }
+        .cpm-table tbody td:nth-child(3) > div > span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+            min-width: 0;
+            flex: 1;
+        }
+        /* Folder + URL also truncate (they already do via inline classes,
+           but enforce overflow: hidden on the cell so fixed-layout works). */
+        .cpm-table tbody td:nth-child(4),
+        .cpm-table tbody td:nth-child(7) {
+            overflow: hidden;
         }
 
         .cpm-table tbody tr {
@@ -2064,26 +2094,28 @@ function addStyles() {
         /* Action Buttons - SLDS-style */
         .cpm-actions {
             display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
+            gap: 4px;
+            flex-wrap: nowrap;
         }
 
+        /* Tighter action buttons so the row fits in a 130px Actions column. */
         .cpm-action-btn {
-            padding: 5px 10px;
+            padding: 4px 8px;
             border: 1px solid #c9c9c9;
             background: #ffffff;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
-            font-weight: 400;
+            font-size: 11px;
+            font-weight: 500;
             color: #080707;
             white-space: nowrap;
             transition: border-color 0.15s, background 0.15s, color 0.15s;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
+            letter-spacing: -0.005em;
         }
-        .cpm-action-btn svg { flex-shrink: 0; width: 14px; height: 14px; }
+        .cpm-action-btn svg { flex-shrink: 0; width: 12px; height: 12px; }
 
         .cpm-action-btn:hover {
             border-color: #0176d3;
@@ -3993,11 +4025,11 @@ function renderTable() {
                 </span>
             </td>
             <td>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <button class="cpm-download-icon" data-action="download" data-id="${item.id}" data-name="${escapeHtml(item.name)}" data-assetid="${item.id}" data-type="${itemType}" title="Download ${isLanding ? 'HTML' : 'file'}" style="background: none; border: none; padding: 0; cursor: pointer; color: ${typeInfo.color}; display: flex; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                    <button class="cpm-download-icon" data-action="download" data-id="${item.id}" data-name="${escapeHtml(item.name)}" data-assetid="${item.id}" data-type="${itemType}" title="Download ${isLanding ? 'HTML' : 'file'}" style="background: none; border: none; padding: 0; cursor: pointer; color: ${typeInfo.color}; display: flex; align-items: center; flex-shrink: 0;">
                         ${ICONS.download}
                     </button>
-                    <span>${escapeHtml(item.name)}</span>
+                    <span title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
                 </div>
             </td>
             <td>
