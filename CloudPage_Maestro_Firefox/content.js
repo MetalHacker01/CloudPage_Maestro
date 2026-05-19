@@ -765,7 +765,7 @@ function createMainUI(pageHookToken, appcoreToken) {
     panel.className = 'minimized'; // Start closed
     
     panel.innerHTML = `
-        <div id="cpm-resize-handle" title="Drag to resize panel" style="position:absolute;left:0;top:0;width:6px;height:100%;cursor:ew-resize;z-index:10;background:transparent;transition:background 0.2s;" onmouseover="this.style.background='rgba(1,118,211,0.2)'" onmouseout="this.style.background='transparent'"></div>
+        <!-- Resize handle removed (laggy on the panel's iframe-heavy content). Panel is fixed-width via CSS. -->
         <div class="cpm-header">
             <div class="cpm-header-left">
                 <div class="cpm-logo">
@@ -948,12 +948,6 @@ function createMainUI(pageHookToken, appcoreToken) {
     toggleBtn.addEventListener('click', () => {
         const mgr = document.getElementById('cloudpages-manager');
         if (mgr) {
-            // Sync the panel-width CSS variable BEFORE flipping the class so
-            // the toggle moves to the panel's left edge in the same frame
-            // the panel slides in. Without this, the toggle would briefly
-            // overshoot to right:600 (CSS default) before snapping.
-            document.documentElement.style.setProperty('--cpm-panel-w', mgr.offsetWidth + 'px');
-
             mgr.classList.toggle('minimized');
             const isOpen = !mgr.classList.contains('minimized');
             window.CPM_STATE.isPanelOpen = isOpen;
@@ -1132,11 +1126,11 @@ function addStyles() {
         }
 
         /* When the panel is open, the toggle moves with it so it sits on the
-           panel's LEFT edge (matches SFMC Scout's pattern, also visually
-           cleaner than the panel sliding over a fixed-right toggle).
-           --cpm-panel-w is set by the click handler + resize handler. */
+           panel's LEFT edge (matches SFMC Scout's pattern). Panel width is
+           fixed at 85% of the viewport, so the toggle uses 85vw to track it
+           through browser-window resizes without any JS bookkeeping. */
         .cpm-toggle-btn.panel-open {
-            right: var(--cpm-panel-w, 600px);
+            right: 85vw;
         }
 
         /* Compact mode — activates when SFMC Scout is also installed.
@@ -2784,48 +2778,9 @@ function setupEventListeners(pageHookToken, appcoreToken) {
         renderTable();
     });
 
-    // ---- v8: Resizable panel ----
-    const resizeHandle = document.getElementById('cpm-resize-handle');
-    if (resizeHandle) {
-        // Load saved width
-        chrome.storage.local.get(['cpm_panel_width'], (result) => {
-            if (result.cpm_panel_width) {
-                const mgr = document.getElementById('cloudpages-manager');
-                mgr.style.width = result.cpm_panel_width;
-                // Keep the toggle aligned with the restored panel width.
-                document.documentElement.style.setProperty('--cpm-panel-w', result.cpm_panel_width);
-            }
-        });
-        resizeHandle.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            const startX = e.clientX;
-            const panel = document.getElementById('cloudpages-manager');
-            const startWidth = panel.offsetWidth;
-            // Prevent text selection and iframe event interference during drag
-            document.body.style.userSelect = 'none';
-            document.body.style.webkitUserSelect = 'none';
-            const panelInner = panel.querySelector('.cpm-content');
-            if (panelInner) panelInner.style.pointerEvents = 'none';
-            function onMove(ev) {
-                const newWidth = Math.max(400, Math.min(window.innerWidth - 100, startWidth - (ev.clientX - startX)));
-                panel.style.width = newWidth + 'px';
-                // Toggle tracks the panel edge live during the drag.
-                document.documentElement.style.setProperty('--cpm-panel-w', newWidth + 'px');
-            }
-            function onUp() {
-                window.removeEventListener('mousemove', onMove);
-                window.removeEventListener('mouseup', onUp);
-                document.body.style.userSelect = '';
-                document.body.style.webkitUserSelect = '';
-                if (panelInner) panelInner.style.pointerEvents = '';
-                const w = document.getElementById('cloudpages-manager').style.width;
-                chrome.storage.local.set({ cpm_panel_width: w });
-                document.documentElement.style.setProperty('--cpm-panel-w', w);
-            }
-            window.addEventListener('mousemove', onMove);
-            window.addEventListener('mouseup', onUp);
-        });
-    }
+    // Resizable panel removed — the drag was laggy on the table's many rows
+    // and frequently got out of sync with the toggle. Panel uses its CSS
+    // default width (85%) and the toggle tracks it via `right: 85vw`.
 
     // ---- v8: Keyboard shortcut - Escape closes panel ----
     document.addEventListener('keydown', (e) => {
