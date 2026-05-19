@@ -178,7 +178,7 @@ SFMC Scout
 
 ### Short description (132 character limit)
 ```
-Search and manage Data Extensions, Automations, Journeys, Emails and Content Builder assets from a side panel inside SFMC.
+Search, inspect and report on Data Extensions, Automations, Journeys, Emails, Templates and Activities from a panel inside SFMC.
 ```
 
 ### Category
@@ -193,40 +193,50 @@ English
 
 ### Single purpose statement
 ```
-Cross-module search and inspection of Salesforce Marketing Cloud assets (Data Extensions, Automations, Journeys, Emails, Activities, Snippets) from an injected side panel, plus DE create/import/export/report tools.
+Cross-module search and inspection of Salesforce Marketing Cloud assets (Data Extensions, Automations, Journeys, Emails, Templates, Activities, Snippets) from an injected side panel, plus DE create / import / export / report tools and standalone HTML reports.
 ```
 
 ### Detailed description
 
 ```
-SFMC Scout adds a side panel to Salesforce Marketing Cloud that lets you search, browse, and work with assets across every module from one place. Universal search hits Data Extensions, Automations, Journeys, Emails, Content Builder assets, and Activities in one keystroke. Click any result and you either open it inline (automations show their full step breakdown with SQL and SSJS) or jump straight to it in SFMC.
+SFMC Scout adds a persistent side panel to Salesforce Marketing Cloud that lets you search, inspect, and work with assets across every module from one place. Universal search hits Data Extensions, Automations, Journeys, Emails, Templates, Content Builder assets, and Activities in one keystroke. Each result row already shows enough context to act on (folder breadcrumb, status pills, IDs, file size). Click any row to open an inline detail card right inside the panel. No login, no OAuth, no credentials. The moment you are signed into SFMC, the panel works.
 
 What is in the panel:
 
-• Universal search. One bar, every module. Data Extensions by name and key, automations with status and last run, journeys with version and channel, content assets by type and folder, activities (SQL queries, scripts, filters, sends, imports, file transfers, data extracts). Results group by type with the top matches first.
+• Universal search. One bar, every module. Results stream in progressively as each source responds, grouped by type with the top matches first.
+  - Data Extensions: name, key, folder path (walks Shared Items tree so cross-BU and shared-subfolder DEs show their real path, no more "Unknown Folder").
+  - Automations: status pill, last run, color-coded state (Active, Scheduled, Paused, Error, Ready).
+  - Journeys: status pill, version, HTS flag, trigger type, channel. Click to expand an inline detail card with activity count, cumulative population, entry source DE name and ID, entry criteria as a code block, humanized schedule, and an Open in Journey Builder button.
+  - Content Builder Assets, Emails, and Templates: name, type, folder breadcrumb, asset ID, Email ID. Click to expand: file size and dimensions for uploads, a Preview button for emails and templates that renders the HTML in a modal, an Open File button for uploaded files (clickable CDN link).
+  - Activities (SQL Queries, Scripts, Filters, Send Emails, Imports, File Transfers, Data Extracts): folder breadcrumb plus an Update Mode chip (Overwrite, Append, Update) inline on every row.
 
-• Automations browser. Color-coded status badges (Active, Scheduled, Paused, Error, Ready). Click any automation to view its step breakdown with syntax-highlighted SQL and SSJS code blocks, expandable per step. Open the automation in SFMC Automation Studio directly from the panel.
+• Automations browser. Color-coded status badges. Click any automation to view its full step breakdown with every SQL query, script, and activity. Syntax-highlighted SQL and SSJS code blocks, expandable per step. Open the automation in SFMC Automation Studio directly from the detail view.
 
 • Data Extension tools.
   Search: find any DE with field count, folder, sendable flag.
-  Create: build a new DE with typed fields, sendable/testable configuration, folder selector.
+  Create: build a new DE with typed fields, sendable / testable configuration, folder selector.
   Export: download all DEs as structured JSON or individual files in a ZIP.
   Import: restore DEs from a previously exported JSON, with optional folder re-creation.
-  Report: generate a full HTML or CSV report with row counts, field counts, sendable mapping.
+  Report: full HTML report with row counts, field counts, sendable mapping, folder path. CSV download lives inside the report (works offline once opened).
 
-• Journeys browser. Active and draft journeys with version, channel, and color-coded status.
+• Journeys browser. Active and draft journeys with the same rich row pills as the search results, and the same inline detail card on click.
 
-• Reports. All reports open as standalone HTML pages with live filter input, sortable columns, dark/light theme support. Available: Automations Report, Journeys Report, Assets Report, Activities Report, Data Extensions Report.
+• Standalone HTML reports. All reports open in a new tab as self-contained pages with a Download CSV button in the report header (UTF-8 BOM, runs entirely in the page), live filter input, sortable columns, color-coded status badges, dark and light theme support. Available reports:
+  - Automations Report: Name, Status, Key, Last Run, Schedule, Steps, Folder, Created By, Description, Created, Modified.
+  - Journeys Report: Name, Status, Version, HTS, Trigger, Entry DE, Population, Channel, Modified.
+  - Assets Report: Name (clickable CDN link for files), Type, Status, ID, Email ID, Customer Key, Folder, Created By, Created, Modified.
+  - Activities Report: Name, Type, Key, Target DE, Update Type, Folder, Description, Modified.
+  - Data Extensions Report: full field inventory with row counts, sendable mapping, folder path.
 
-• Snippets. Save, label, and tag reusable AMPscript, SSJS, and SQL snippets. Deploy a snippet directly into an open SFMC Ace editor (CloudPages, Script Activities) with one click.
+• Snippets. Save, label, and tag reusable AMPscript, SSJS, and SQL snippets. Deploy a snippet directly into an open SFMC Ace editor (Cloud Pages, Script Activities) with one click. Syntax-highlighted preview.
 
-• Dark and light mode. Theme persists across sessions and applies to all generated reports.
+• Dark and light mode. Theme persists across sessions and applies to the panel and every generated report.
 
 How it works
 
 Scout reads from SFMC's internal /cloud/fuelapi/ proxy using your existing session cookies. No login, no OAuth, no credential entry. The moment you are signed into SFMC, the panel works. For the few endpoints that require a CSRF token (DE create, DE import, contact lookup), the extension passively reads the token from outbound traffic SFMC is already sending and stores it locally for the duration of the session.
 
-Search is capped at the top 40 matches per type by relevance. On a 100k-asset production org, an open search like "test" would otherwise overload SFMC's search engine. The dedicated DE Tools, Automations, and Reports tabs give you full paginated browsing for exhaustive work.
+Universal Search uses real server-side filters (the same ones SFMC's own UI uses), so it returns full matches even on production orgs with 5,000+ automations and 400+ journeys. Search results are capped at the top 40 matches per type by relevance, then grouped and collapsed to the top 10 per group with "Show all N" inline expansion. The dedicated DE Tools, Automations, and Reports tabs give you full paginated browsing for exhaustive work.
 
 No data leaves your browser. The extension does not call any third-party server. There is no analytics or telemetry.
 
