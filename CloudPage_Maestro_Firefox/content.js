@@ -948,6 +948,12 @@ function createMainUI(pageHookToken, appcoreToken) {
     toggleBtn.addEventListener('click', () => {
         const mgr = document.getElementById('cloudpages-manager');
         if (mgr) {
+            // Sync the panel-width CSS variable BEFORE flipping the class so
+            // the toggle moves to the panel's left edge in the same frame
+            // the panel slides in. Without this, the toggle would briefly
+            // overshoot to right:600 (CSS default) before snapping.
+            document.documentElement.style.setProperty('--cpm-panel-w', mgr.offsetWidth + 'px');
+
             mgr.classList.toggle('minimized');
             const isOpen = !mgr.classList.contains('minimized');
             window.CPM_STATE.isPanelOpen = isOpen;
@@ -1125,6 +1131,14 @@ function addStyles() {
             transform: rotate(180deg);
         }
 
+        /* When the panel is open, the toggle moves with it so it sits on the
+           panel's LEFT edge (matches SFMC Scout's pattern, also visually
+           cleaner than the panel sliding over a fixed-right toggle).
+           --cpm-panel-w is set by the click handler + resize handler. */
+        .cpm-toggle-btn.panel-open {
+            right: var(--cpm-panel-w, 600px);
+        }
+
         /* Compact mode — activates when SFMC Scout is also installed.
            Shrinks the vertical wordmark tab into a small icon pill so both
            extensions can sit on the right edge without fighting for space.
@@ -1160,7 +1174,7 @@ function addStyles() {
             line-height: 1;
         }
         .cpm-toggle-btn.cpm-compact .cpm-toggle-wordmark::before {
-            content: 'CP';
+            content: 'CMP';
         }
         .cpm-toggle-btn.cpm-compact .cpm-toggle-wordmark {
             font-size: 0;
@@ -2776,7 +2790,10 @@ function setupEventListeners(pageHookToken, appcoreToken) {
         // Load saved width
         chrome.storage.local.get(['cpm_panel_width'], (result) => {
             if (result.cpm_panel_width) {
-                document.getElementById('cloudpages-manager').style.width = result.cpm_panel_width;
+                const mgr = document.getElementById('cloudpages-manager');
+                mgr.style.width = result.cpm_panel_width;
+                // Keep the toggle aligned with the restored panel width.
+                document.documentElement.style.setProperty('--cpm-panel-w', result.cpm_panel_width);
             }
         });
         resizeHandle.addEventListener('mousedown', (e) => {
@@ -2792,6 +2809,8 @@ function setupEventListeners(pageHookToken, appcoreToken) {
             function onMove(ev) {
                 const newWidth = Math.max(400, Math.min(window.innerWidth - 100, startWidth - (ev.clientX - startX)));
                 panel.style.width = newWidth + 'px';
+                // Toggle tracks the panel edge live during the drag.
+                document.documentElement.style.setProperty('--cpm-panel-w', newWidth + 'px');
             }
             function onUp() {
                 window.removeEventListener('mousemove', onMove);
@@ -2801,6 +2820,7 @@ function setupEventListeners(pageHookToken, appcoreToken) {
                 if (panelInner) panelInner.style.pointerEvents = '';
                 const w = document.getElementById('cloudpages-manager').style.width;
                 chrome.storage.local.set({ cpm_panel_width: w });
+                document.documentElement.style.setProperty('--cpm-panel-w', w);
             }
             window.addEventListener('mousemove', onMove);
             window.addEventListener('mouseup', onUp);
