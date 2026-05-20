@@ -813,40 +813,91 @@ function createMainUI(pageHookToken, appcoreToken) {
             </div>
         </div>
 
-        <!-- About Modal -->
-        <div id="cpm-about-modal" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(3,45,96,0.6);backdrop-filter:blur(3px);z-index:10000;align-items:center;justify-content:center;">
-            <div class="cpm-about-card">
-                <!-- Hero band -->
-                <div class="cpm-about-hero">
+        <!-- About Modal — structurally consistent with SFMC Scout's About,
+             themed for CloudPage Maestro (SFMC blue accent in light, deeper
+             navy in dark). -->
+        <div id="cpm-about-modal" class="cpm-about-overlay">
+            <div class="cpm-about-modal">
+                <button class="cpm-about-x" id="cpm-about-close" aria-label="Close">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+
+                <div class="cpm-about-top">
                     <div class="cpm-about-logo-ring">
-                        <img src="https://i.imgur.com/A6bV4BF.png" alt="CloudPage Maestro logo" class="cpm-about-logo-img">
+                        <img src="https://i.imgur.com/A6bV4BF.png" width="32" height="32" alt="CloudPage Maestro">
                     </div>
-                    <div class="cpm-about-hero-text">
-                        <div class="cpm-about-product-name">CloudPage <strong>Maestro</strong></div>
-                        <div class="cpm-about-version">v1.0.0 &nbsp;·&nbsp; SFMC Asset Manager</div>
+                    <div>
+                        <div class="cpm-about-brand">CloudPage <span>Maestro</span></div>
+                        <div class="cpm-about-tagline">CloudPages Control</div>
                     </div>
-                    <button id="cpm-about-close" class="cpm-about-close-btn" title="Close">&times;</button>
+                    <span class="cpm-about-version">v1.0.0</span>
                 </div>
-                <!-- Body -->
-                <div class="cpm-about-body">
-                    <div class="cpm-about-built-label">Built by</div>
-                    <div class="cpm-about-author">Aldorino Rrushi</div>
-                    <div class="cpm-about-copy">&copy; 2026 &mdash; Salesforce Marketing Cloud Tools</div>
-                    <div class="cpm-about-divider"></div>
-                    <div class="cpm-about-links">
-                        <a href="https://www.linkedin.com/in/aldorino-rrushi/" target="_blank" rel="noopener" class="cpm-about-link cpm-about-link-li">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                            LinkedIn
-                        </a>
-                        <a href="https://martech-maestro-folio-sroh.vercel.app/" target="_blank" rel="noopener" class="cpm-about-link cpm-about-link-web">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
-                            Portfolio
-                        </a>
-                        <a href="https://github.com/MetalHacker01" target="_blank" rel="noopener" class="cpm-about-link cpm-about-link-gh">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
-                            GitHub
-                        </a>
+
+                <div class="cpm-about-tags">
+                    <span class="cpm-about-tag">Bulk Publish</span>
+                    <span class="cpm-about-tag">Folder Move</span>
+                    <span class="cpm-about-tag">Download All</span>
+                    <span class="cpm-about-tag">Export CSV</span>
+                    <span class="cpm-about-tag">Dark Mode</span>
+                </div>
+
+                <div class="cpm-about-divider"></div>
+
+                <div class="cpm-about-craft">
+                    <div class="cpm-about-craft-line">
+                        Developed with
+                        <svg class="cpm-about-heart" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 21s-7-4.5-9.5-9.5C-.5 5.5 4 2 8 4.5c1.5 1 2.5 2 4 4 1.5-2 2.5-3 4-4 4-2.5 8.5 1 5.5 7C19 16.5 12 21 12 21z" fill="currentColor"/>
+                        </svg>
+                        by
                     </div>
+                    <div class="cpm-about-author">Aldorino Rrushi</div>
+                    <div class="cpm-about-author-sub">MarTech Solution Engineer · SFMC Specialist</div>
+                </div>
+
+                <div class="cpm-about-section-label">Find me</div>
+                <div class="cpm-about-link-cards">
+                    <a href="https://www.linkedin.com/in/aldorino-rrushi/" target="_blank" rel="noopener" class="cpm-about-link-card">
+                        <div class="cpm-about-link-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V16C21 18.761 18.761 21 16 21H8C5.239 21 3 18.761 3 16V8C3 5.239 5.239 3 8 3H16C18.761 3 21 5.239 21 8Z"/><path d="M7 17V13.5V10"/><path d="M11 17V13.75M11 10V13.75M11 13.75C11 10 17 10 17 13.75V17"/><path d="M7 7.01L7.01 6.999"/></svg>
+                        </div>
+                        <div class="cpm-about-link-text">
+                            <span class="cpm-about-link-name">Aldorino Rrushi</span>
+                            <span class="cpm-about-link-handle">linkedin.com/in/aldorino-rrushi</span>
+                        </div>
+                        <span class="cpm-about-link-arrow">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        </span>
+                    </a>
+                    <a href="https://martech-maestro-folio-sroh.vercel.app/" target="_blank" rel="noopener" class="cpm-about-link-card">
+                        <div class="cpm-about-link-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C17.523 22 22 17.523 22 12C22 6.477 17.523 2 12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22Z"/><path d="M2.5 12.5L8 11L10 14L8 17L9 22"/><path d="M17 21.5L16 17.5L13 16V13L17 12L21.5 13"/><path d="M15 2.5L14 6L10 7V10L14 9L15.5 7L19 8"/></svg>
+                        </div>
+                        <div class="cpm-about-link-text">
+                            <span class="cpm-about-link-name">Portfolio</span>
+                            <span class="cpm-about-link-handle">MarTech Maestro</span>
+                        </div>
+                        <span class="cpm-about-link-arrow">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        </span>
+                    </a>
+                    <a href="https://github.com/MetalHacker01" target="_blank" rel="noopener" class="cpm-about-link-card">
+                        <div class="cpm-about-link-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 22.027V19.157C16.037 18.68 15.973 18.2 15.811 17.75C15.649 17.3 15.393 16.89 15.06 16.547C18.2 16.197 21.5 15.007 21.5 9.517C21.5 8.1 20.963 6.738 20 5.717C20.456 4.481 20.424 3.113 19.91 1.897C19.91 1.897 18.73 1.547 16 3.487C13.708 2.886 11.292 2.886 9 3.487C6.27 1.547 5.09 1.897 5.09 1.897C4.576 3.113 4.544 4.481 5 5.717C4.03 6.745 3.493 8.116 3.5 9.547C3.5 15.007 6.8 16.197 9.94 16.577C9.611 16.917 9.357 17.322 9.195 17.767C9.033 18.211 8.967 18.685 9 19.157V22.027"/><path d="M9 20.027C6 21 3.5 20.027 2 17.027"/></svg>
+                        </div>
+                        <div class="cpm-about-link-text">
+                            <span class="cpm-about-link-name">GitHub</span>
+                            <span class="cpm-about-link-handle">MetalHacker01</span>
+                        </div>
+                        <span class="cpm-about-link-arrow">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        </span>
+                    </a>
+                </div>
+
+                <div class="cpm-about-footer">
+                    <span class="cpm-about-code-mark">&lt;/&gt;</span>
+                    &copy; 2026 Aldorino Rrushi &middot; Built for the SFMC community
                 </div>
             </div>
         </div>
@@ -2007,132 +2058,298 @@ function addStyles() {
             background: #f9f9f9;
         }
 
-        /* About Modal */
-        .cpm-about-card {
-            background: #ffffff;
-            border-radius: 10px;
-            width: 380px;
-            max-width: 94%;
-            box-shadow: 0 20px 60px rgba(3,45,96,0.28), 0 4px 16px rgba(3,45,96,0.12);
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Salesforce Sans', sans-serif;
+        /* About Modal — structurally consistent with SFMC Scout, themed
+           for CloudPage Maestro (SFMC blue accent in light, deeper navy
+           in dark). Both extensions now share the same layout vocabulary
+           so users see the same "shape" no matter which they open. */
+        #cpm-about-overlay,
+        .cpm-about-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 45, 96, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 10000001;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
         }
-        .cpm-about-hero {
-            background: linear-gradient(135deg, #0176d3 0%, #014a8a 100%);
-            padding: 20px 20px 18px;
+        .cpm-about-overlay.open { display: flex; }
+        .cpm-about-modal {
+            position: relative;
+            background: #ffffff;
+            border-radius: 14px;
+            width: 420px;
+            max-width: 100%;
+            padding: 24px 24px 18px;
+            box-shadow: 0 20px 60px rgba(3, 45, 96, 0.22), 0 4px 16px rgba(15, 17, 21, 0.06);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #0f1115;
+            border: 1px solid #e7e8eb;
+            animation: cpmAboutIn 220ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes cpmAboutIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Top — logo + brand + version + close.
+           padding-right reserves room for the absolute X button in the
+           top-right corner so the version pill never overlaps it. */
+        .cpm-about-top {
             display: flex;
             align-items: center;
             gap: 14px;
-            position: relative;
+            padding-bottom: 18px;
+            padding-right: 36px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #eef0f3;
         }
         .cpm-about-logo-ring {
             width: 52px;
             height: 52px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.18);
-            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 14px;
+            background: linear-gradient(135deg, #e6f2fb 0%, #cfe5f7 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 0 20px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.25);
+            border: 1px solid #c3dbf0;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
         }
-        .cpm-about-logo-img {
-            width: 36px;
-            height: 36px;
-            object-fit: contain;
-            filter: brightness(0) invert(1);
+        .cpm-about-logo-ring img {
+            filter: invert(1) contrast(1.05);
         }
-        .cpm-about-hero-text {
-            flex: 1;
-            min-width: 0;
+        .cpm-about-brand {
+            font-size: 17px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: #0f1115;
+            line-height: 1.1;
         }
-        .cpm-about-product-name {
-            font-size: 16px;
-            font-weight: 400;
-            color: rgba(255,255,255,0.92);
-            line-height: 1.2;
-        }
-        .cpm-about-product-name strong {
+        .cpm-about-brand span {
             font-weight: 700;
-            color: #ffffff;
+            color: #0176d3;
+        }
+        .cpm-about-tagline {
+            font-size: 11.5px;
+            color: #6b7280;
+            margin-top: 4px;
+            letter-spacing: 0.02em;
         }
         .cpm-about-version {
+            font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
             font-size: 10.5px;
-            color: rgba(255,255,255,0.6);
-            margin-top: 3px;
+            font-weight: 600;
+            color: #0176d3;
+            background: #e6f2fb;
+            border: 1px solid #c3dbf0;
+            border-radius: 999px;
+            padding: 3px 9px;
             letter-spacing: 0.04em;
+            margin-left: auto;
+            align-self: flex-start;
         }
-        .cpm-about-close-btn {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.25);
-            border-radius: 50%;
-            color: rgba(255,255,255,0.85);
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
+        .cpm-about-x {
+            position: absolute;
+            top: 14px;
+            right: 14px;
             width: 28px;
             height: 28px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            transition: background 0.15s;
+            background: transparent;
+            border: 1px solid #e7e8eb;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #6b7280;
+            transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
         }
-        .cpm-about-close-btn:hover { background: rgba(255,255,255,0.28); color: #fff; }
-        .cpm-about-body {
-            padding: 24px 28px 22px;
-            text-align: center;
+        .cpm-about-x:hover {
+            background: #f4f6f9;
+            color: #0f1115;
+            border-color: #c0c6ce;
         }
-        .cpm-about-built-label {
-            font-size: 10px;
-            font-weight: 700;
-            color: #706e6b;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 5px;
-        }
-        .cpm-about-author {
-            font-size: 22px;
-            font-weight: 700;
-            color: #032d60;
-            margin-bottom: 3px;
-        }
-        .cpm-about-copy {
-            font-size: 11.5px;
-            color: #9ba8bc;
+
+        /* Tags row — feature pills */
+        .cpm-about-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
             margin-bottom: 18px;
         }
+        .cpm-about-tag {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #4b5260;
+            background: #f4f6f9;
+            border: 1px solid #e7e8eb;
+            border-radius: 6px;
+            padding: 4px 8px;
+        }
+
         .cpm-about-divider {
             height: 1px;
             background: #eef0f3;
             margin: 0 0 18px;
         }
-        .cpm-about-links {
+
+        /* Craft line — the "developed with love" personality block */
+        .cpm-about-craft {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        .cpm-about-craft-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: #6b7280;
+            letter-spacing: 0.01em;
+            margin-bottom: 6px;
+        }
+        .cpm-about-heart {
+            color: #e0245e;
+            animation: cpmAboutHeartBeat 1.6s ease-in-out infinite;
+            transform-origin: center;
+        }
+        @keyframes cpmAboutHeartBeat {
+            0%, 100% { transform: scale(1); }
+            14%      { transform: scale(1.18); }
+            28%      { transform: scale(1); }
+            42%      { transform: scale(1.12); }
+            70%      { transform: scale(1); }
+        }
+        .cpm-about-author {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f1115;
+            letter-spacing: -0.015em;
+            line-height: 1.15;
+        }
+        .cpm-about-author-sub {
+            font-size: 11px;
+            color: #8b949e;
+            margin-top: 5px;
+            letter-spacing: 0.02em;
+        }
+
+        /* Section label + link cards */
+        .cpm-about-section-label {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #8b949e;
+            margin-bottom: 10px;
+        }
+        .cpm-about-link-cards {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            margin-bottom: 18px;
         }
-        .cpm-about-link {
+        .cpm-about-link-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: #f8fbff;
+            border: 1px solid #d6e6f5;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #0f1115;
+            transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 160ms ease,
+                        background 160ms ease,
+                        box-shadow 160ms ease;
+        }
+        .cpm-about-link-card:hover {
+            transform: translateY(-1px);
+            background: #ffffff;
+            border-color: #0176d3;
+            box-shadow: 0 4px 14px rgba(1, 118, 211, 0.12);
+        }
+        .cpm-about-link-card:active {
+            transform: translateY(0);
+        }
+        .cpm-about-link-icon {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border: 1px solid #d6e6f5;
+            border-radius: 8px;
+            color: #0176d3;
+            flex-shrink: 0;
+            transition: background 160ms ease, color 160ms ease;
+        }
+        .cpm-about-link-card:hover .cpm-about-link-icon {
+            background: #e6f2fb;
+            color: #014a8a;
+        }
+        .cpm-about-link-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
+        }
+        .cpm-about-link-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f1115;
+            letter-spacing: -0.005em;
+        }
+        .cpm-about-link-handle {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 10.5px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        .cpm-about-link-arrow {
+            color: #c0c6ce;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 160ms ease, transform 160ms ease;
+            opacity: 0.7;
+        }
+        .cpm-about-link-card:hover .cpm-about-link-arrow {
+            color: #0176d3;
+            transform: translate(2px, -2px);
+            opacity: 1;
+        }
+
+        /* Footer */
+        .cpm-about-footer {
+            font-size: 10.5px;
+            color: #9ba3ab;
+            text-align: center;
+            padding-top: 14px;
+            border-top: 1px solid #eef0f3;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 10px 16px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            border: 1px solid transparent;
-            transition: background 0.15s, border-color 0.15s, transform 0.1s;
         }
-        .cpm-about-link:hover { transform: translateY(-1px); }
-        .cpm-about-link-li { background:#0a66c2; color:#fff; }
-        .cpm-about-link-li:hover { background:#004182; }
-        .cpm-about-link-web { background:#f3f6fb; border-color:#d0dae8; color:#0176d3; }
-        .cpm-about-link-web:hover { background:#e8f0fa; border-color:#0176d3; }
-        .cpm-about-link-gh { background:#f6f8fa; border-color:#d0d7de; color:#24292f; }
-        .cpm-about-link-gh:hover { background:#eaeef2; border-color:#9ba3ab; }
+        .cpm-about-code-mark {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: #0176d3;
+            background: #e6f2fb;
+            border: 1px solid #c3dbf0;
+            border-radius: 4px;
+            padding: 1px 5px;
+            letter-spacing: 0;
+        }
 
         /* Action Buttons - SLDS-style */
         .cpm-actions {
@@ -2662,21 +2879,113 @@ function addStyles() {
                 rgba(255, 255, 255, 0.12) 50%,
                 rgba(255, 255, 255, 0) 100%) !important;
         }
-        /* About card */
-        #cloudpages-manager.cpm-dark .cpm-about-card {
+        /* About modal — dark mode */
+        #cloudpages-manager.cpm-dark .cpm-about-overlay,
+        #cloudpages-manager.cpm-dark .cpm-about-overlay,
+        body.cpm-about-dark .cpm-about-overlay {
+            background: rgba(0, 0, 0, 0.65);
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-modal,
+        body.cpm-about-dark .cpm-about-modal {
             background: #161b22;
-            border: 1px solid #30363d;
+            border-color: #2c333d;
+            color: #e6edf3;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 4px 16px rgba(0, 0, 0, 0.35);
         }
-        #cloudpages-manager.cpm-dark .cpm-about-hero {
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-top,
+        body.cpm-about-dark .cpm-about-top { border-bottom-color: #21262d; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-logo-ring,
+        body.cpm-about-dark .cpm-about-logo-ring {
             background: linear-gradient(135deg, #0a2540 0%, #01111f 100%);
+            border-color: #1a3454;
         }
-        #cloudpages-manager.cpm-dark .cpm-about-body { background: #161b22; }
-        #cloudpages-manager.cpm-dark .cpm-about-built-label { color: #484f58; }
-        #cloudpages-manager.cpm-dark .cpm-about-author { color: #e6edf3; }
-        #cloudpages-manager.cpm-dark .cpm-about-copy { color: #484f58; }
-        #cloudpages-manager.cpm-dark .cpm-about-divider { background: #21262d; }
-        #cloudpages-manager.cpm-dark .cpm-about-link-web { background: #1c2128 !important; border-color: #30363d !important; color: #58a6ff !important; }
-        #cloudpages-manager.cpm-dark .cpm-about-link-web:hover { background: #21262d !important; border-color: #58a6ff !important; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-logo-ring img,
+        body.cpm-about-dark .cpm-about-logo-ring img {
+            filter: none;
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-brand,
+        body.cpm-about-dark .cpm-about-brand { color: #e6edf3; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-brand span,
+        body.cpm-about-dark .cpm-about-brand span { color: #58a6ff; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-tagline,
+        body.cpm-about-dark .cpm-about-tagline { color: #8b949e; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-version,
+        body.cpm-about-dark .cpm-about-version {
+            background: #0d1b2e;
+            color: #58a6ff;
+            border-color: #1a3454;
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-x,
+        body.cpm-about-dark .cpm-about-x {
+            border-color: #2c333d;
+            color: #8b949e;
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-x:hover,
+        body.cpm-about-dark .cpm-about-x:hover {
+            background: #1f242c;
+            color: #e6edf3;
+            border-color: #4d5562;
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-tag,
+        body.cpm-about-dark .cpm-about-tag {
+            background: #1c2128;
+            border-color: #2c333d;
+            color: #a8afb8;
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-divider,
+        body.cpm-about-dark .cpm-about-divider { background: #21262d; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-craft-line,
+        body.cpm-about-dark .cpm-about-craft-line { color: #8b949e; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-heart,
+        body.cpm-about-dark .cpm-about-heart { color: #ff5d8f; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-author,
+        body.cpm-about-dark .cpm-about-author { color: #e6edf3; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-author-sub,
+        body.cpm-about-dark .cpm-about-author-sub { color: #6e7681; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-section-label,
+        body.cpm-about-dark .cpm-about-section-label { color: #6e7681; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-link-card,
+        body.cpm-about-dark .cpm-about-link-card {
+            background: #0d1117;
+            border-color: #21262d;
+            color: #e6edf3;
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-link-card:hover,
+        body.cpm-about-dark .cpm-about-link-card:hover {
+            background: #1c2128;
+            border-color: #58a6ff;
+            box-shadow: 0 4px 14px rgba(88, 166, 255, 0.18);
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-link-icon,
+        body.cpm-about-dark .cpm-about-link-icon {
+            background: #161b22;
+            border-color: #2c333d;
+            color: #58a6ff;
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-link-card:hover .cpm-about-link-icon,
+        body.cpm-about-dark .cpm-about-link-card:hover .cpm-about-link-icon {
+            background: #0d1b2e;
+            color: #7ba6ff;
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-link-name,
+        body.cpm-about-dark .cpm-about-link-name { color: #e6edf3; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-link-handle,
+        body.cpm-about-dark .cpm-about-link-handle { color: #6e7681; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-link-arrow,
+        body.cpm-about-dark .cpm-about-link-arrow { color: #4d5562; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-link-card:hover .cpm-about-link-arrow,
+        body.cpm-about-dark .cpm-about-link-card:hover .cpm-about-link-arrow { color: #7ba6ff; }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-footer,
+        body.cpm-about-dark .cpm-about-footer {
+            color: #6e7681;
+            border-top-color: #21262d;
+        }
+        #cloudpages-manager.cpm-dark .cpm-about-overlay .cpm-about-code-mark,
+        body.cpm-about-dark .cpm-about-code-mark {
+            background: #0d1b2e;
+            color: #7ba6ff;
+            border-color: #1a3454;
+        }
         #cloudpages-manager.cpm-dark .cpm-about-link-gh { background: #1c2128 !important; border-color: #30363d !important; color: #c9d1d9 !important; }
         #cloudpages-manager.cpm-dark .cpm-about-link-gh:hover { background: #21262d !important; border-color: #8b949e !important; }
         /* Toggle icons */
@@ -2792,18 +3101,22 @@ function setupEventListeners(pageHookToken, appcoreToken) {
         });
     }
 
-    // About button handlers
+    // About modal — open via header button, close via X / outside-click / Esc.
     document.getElementById('cpm-about-btn')?.addEventListener('click', () => {
-        const modal = document.getElementById('cpm-about-modal');
-        if (modal) { modal.style.display = 'flex'; }
+        document.getElementById('cpm-about-modal')?.classList.add('open');
     });
     document.getElementById('cpm-about-close')?.addEventListener('click', () => {
-        const modal = document.getElementById('cpm-about-modal');
-        if (modal) { modal.style.display = 'none'; }
+        document.getElementById('cpm-about-modal')?.classList.remove('open');
     });
     document.getElementById('cpm-about-modal')?.addEventListener('click', (e) => {
         if (e.target === document.getElementById('cpm-about-modal')) {
-            e.target.style.display = 'none';
+            e.target.classList.remove('open');
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('cpm-about-modal');
+            if (modal?.classList.contains('open')) modal.classList.remove('open');
         }
     });
     
