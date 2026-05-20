@@ -1779,16 +1779,20 @@ function addStyles() {
             border-bottom: 1px solid #c9c9c9;
         }
 
-        /* Column widths tuned so the entire table fits on a 1366px laptop
-           (panel width ~1160px) without horizontal scroll. Name absorbs
-           any surplus on wider panels. */
-        .cpm-table th:nth-child(1) { width: 36px; }   /* Checkbox */
+        /* Column widths. Sum = 1140px which acts as the proportional
+           reference under table-layout: fixed — the browser scales all
+           columns to fit the actual panel width. Type/Status/URL get
+           generous widths because their badge content is wider than
+           people expect (e.g. "Unpublished" badge with icon is ~110px).
+           Name is FIXED (not auto), so it gets a proportional share like
+           the others and truncates with ellipsis when content exceeds it. */
+        .cpm-table th:nth-child(1) { width: 40px; }   /* Checkbox */
         .cpm-table th:nth-child(2) { width: 60px; }   /* ID */
-        .cpm-table th:nth-child(3) { width: auto; }   /* Name (flexes + ellipsis) */
+        .cpm-table th:nth-child(3) { width: 280px; }  /* Name (fixed + ellipsis) */
         .cpm-table th:nth-child(4) { width: 140px; }  /* Folder */
-        .cpm-table th:nth-child(5) { width: 80px; }   /* Type */
-        .cpm-table th:nth-child(6) { width: 95px; }   /* Status */
-        .cpm-table th:nth-child(7) { width: 130px; }  /* URL */
+        .cpm-table th:nth-child(5) { width: 115px; }  /* Type ("Landing Page" badge) */
+        .cpm-table th:nth-child(6) { width: 125px; }  /* Status ("Unpublished" badge) */
+        .cpm-table th:nth-child(7) { width: 145px; }  /* URL */
         .cpm-table th:nth-child(8) { width: 90px; }   /* Modified */
         .cpm-table th:nth-child(9) { width: 130px; }  /* Actions */
 
@@ -1824,9 +1828,9 @@ function addStyles() {
             overflow: hidden;
         }
 
-        /* Responsive table tightening — kicks in on narrow viewports
-           (typical laptops at high DPI scaling) so all columns stay visible
-           without horizontal scroll. */
+        /* Responsive table tightening on narrow viewports. Column widths
+           themselves stay proportional (table-layout: fixed scales them
+           automatically); only padding and action buttons shrink. */
         @media (max-width: 1500px) {
             .cpm-table th,
             .cpm-table td {
@@ -1838,22 +1842,16 @@ function addStyles() {
                 gap: 3px;
             }
             .cpm-action-btn svg { width: 11px; height: 11px; }
-            .cpm-table th:nth-child(4) { width: 120px; }  /* Folder */
-            .cpm-table th:nth-child(7) { width: 110px; }  /* URL */
-            .cpm-table th:nth-child(9) { width: 115px; }  /* Actions */
         }
 
-        /* Very narrow viewports (smallish laptops at high DPI) — drop the
-           ID column. IDs are the least essential field, the URL contains
-           them, and the user can still get the ID via right-click. */
+        /* Very narrow viewports — drop the ID column. Least essential
+           field, the URL contains it, and the user can right-click the
+           row to get it from the data attribute. */
         @media (max-width: 1200px) {
             .cpm-table th:nth-child(2),
             .cpm-table td:nth-child(2) {
                 display: none;
             }
-            .cpm-table th:nth-child(4) { width: 110px; }  /* Folder tighter */
-            .cpm-table th:nth-child(7) { width: 100px; }  /* URL tighter */
-            .cpm-table th:nth-child(8) { width: 80px; }   /* Modified tighter */
         }
 
         .cpm-table tbody tr {
