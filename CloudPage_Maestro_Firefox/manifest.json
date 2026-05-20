@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "CloudPage Maestro",
   "version": "1.0.0",
-  "description": "Batch manage Salesforce Marketing Cloud CloudPages — publish, unpublish, filter, sort, and export with a single click.",
+  "description": "Batch manage Salesforce Marketing Cloud CloudPages: publish, unpublish, filter, sort, and export with one click.",
   "author": "Aldorino Rrushi",
 
   "browser_specific_settings": {
