@@ -1034,12 +1034,25 @@ function addStyles() {
     const style = document.createElement('style');
     style.id = 'cpm-styles';
     style.textContent = `
+        /* Responsive panel width as a CSS custom property so the toggle's
+           "right" position tracks the same value through every breakpoint
+           without any JS bookkeeping. */
+        :root {
+            --cpm-panel-width: 85vw;
+        }
+        @media (max-width: 1500px) {
+            :root { --cpm-panel-width: 95vw; }
+        }
+        @media (max-width: 1200px) {
+            :root { --cpm-panel-width: 98vw; }
+        }
+
         /* Main Panel Container - SLDS-aligned */
         #cloudpages-manager {
             position: fixed;
             top: 0;
             right: 0;
-            width: 85%;
+            width: var(--cpm-panel-width);
             height: 100vh;
             background: #ffffff;
             box-shadow: -4px 0 24px rgba(0,0,0,0.12);
@@ -1126,11 +1139,11 @@ function addStyles() {
         }
 
         /* When the panel is open, the toggle moves with it so it sits on the
-           panel's LEFT edge (matches SFMC Scout's pattern). Panel width is
-           fixed at 85% of the viewport, so the toggle uses 85vw to track it
-           through browser-window resizes without any JS bookkeeping. */
+           panel's LEFT edge. Uses the same --cpm-panel-width variable as
+           the panel, so the toggle tracks the panel through every responsive
+           breakpoint without any JS bookkeeping. */
         .cpm-toggle-btn.panel-open {
-            right: 85vw;
+            right: var(--cpm-panel-width);
         }
 
         /* Compact mode — activates when SFMC Scout is also installed.
@@ -1809,6 +1822,38 @@ function addStyles() {
         .cpm-table tbody td:nth-child(4),
         .cpm-table tbody td:nth-child(7) {
             overflow: hidden;
+        }
+
+        /* Responsive table tightening — kicks in on narrow viewports
+           (typical laptops at high DPI scaling) so all columns stay visible
+           without horizontal scroll. */
+        @media (max-width: 1500px) {
+            .cpm-table th,
+            .cpm-table td {
+                padding: 8px 8px;
+            }
+            .cpm-action-btn {
+                padding: 3px 6px;
+                font-size: 10.5px;
+                gap: 3px;
+            }
+            .cpm-action-btn svg { width: 11px; height: 11px; }
+            .cpm-table th:nth-child(4) { width: 120px; }  /* Folder */
+            .cpm-table th:nth-child(7) { width: 110px; }  /* URL */
+            .cpm-table th:nth-child(9) { width: 115px; }  /* Actions */
+        }
+
+        /* Very narrow viewports (smallish laptops at high DPI) — drop the
+           ID column. IDs are the least essential field, the URL contains
+           them, and the user can still get the ID via right-click. */
+        @media (max-width: 1200px) {
+            .cpm-table th:nth-child(2),
+            .cpm-table td:nth-child(2) {
+                display: none;
+            }
+            .cpm-table th:nth-child(4) { width: 110px; }  /* Folder tighter */
+            .cpm-table th:nth-child(7) { width: 100px; }  /* URL tighter */
+            .cpm-table th:nth-child(8) { width: 80px; }   /* Modified tighter */
         }
 
         .cpm-table tbody tr {
