@@ -162,7 +162,7 @@ These are the only domains where Salesforce Marketing Cloud is served. The exten
 - **Remote code:** No. The only third-party library is JSZip 3.10.1, which is bundled locally inside `lib/jszip.min.js`.
 - **Privacy policy URL:** the GitHub Pages URL you set up from the shared policy above.
 - **Support URL:** `https://github.com/MetalHacker01/CloudPage_Maestro/issues`
-- **Homepage URL:** `https://github.com/MetalHacker01/CloudPage_Maestro`
+- **Homepage URL:** `https://metalhacker01.github.io/CloudPage_Maestro/` (the docs site — Chrome wants a product info page here, not the repo)
 - **Distribution country list:** All countries (unless you have a reason to restrict).
 - **Visibility:** Public.
 - **Pricing:** Free.
@@ -291,7 +291,7 @@ These are the only domains where Salesforce Marketing Cloud is served. The panel
 - **Remote code:** No. No CDN-loaded scripts.
 - **Privacy policy URL:** same GitHub Pages URL as CPM.
 - **Support URL:** `https://github.com/MetalHacker01/SFMC_Scout/issues`
-- **Homepage URL:** `https://github.com/MetalHacker01/SFMC_Scout`
+- **Homepage URL:** `https://metalhacker01.github.io/SFMC_Scout/` (the docs site — Chrome wants a product info page here, not the repo)
 - **Distribution country list:** All countries.
 - **Visibility:** Public.
 - **Pricing:** Free.
