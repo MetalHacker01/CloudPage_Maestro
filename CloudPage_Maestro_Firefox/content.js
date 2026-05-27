@@ -110,6 +110,21 @@ function cpmAnnouncePanelState(isOpen) {
     } catch (_) {}
 }
 
+// Single canonical close path. Every user-initiated close (X button, Escape,
+// future triggers) must go through here so the toggle's `panel-open` class,
+// the state flag, and the peer notification stay in sync. Closing via only
+// panel.classList.add('minimized') left `panel-open` stale, so the toggle tab
+// stayed parked where the open panel had pushed it. See FIXES.md.
+function cpmClosePanel() {
+    const panel = document.getElementById('cloudpages-manager');
+    if (!panel || panel.classList.contains('minimized')) return;
+    panel.classList.add('minimized');
+    if (window.CPM_STATE) window.CPM_STATE.isPanelOpen = false;
+    const toggle = document.getElementById('cpm-toggle-btn');
+    if (toggle) toggle.classList.remove('panel-open');
+    cpmAnnouncePanelState(false);
+}
+
 function cpmSetupPeerCoordination() {
     // Run detection twice — once after a short delay (peer may load slightly
     // before or after us), once later in case the peer is slow to bootstrap.
@@ -2997,13 +3012,9 @@ function addStyles() {
 
 // Setup event listeners
 function setupEventListeners(pageHookToken, appcoreToken) {
-    // Close button - slides panel closed
+    // Close button - slides panel closed (canonical path keeps toggle in sync)
     document.getElementById('cpm-close-btn')?.addEventListener('click', () => {
-        const panel = document.getElementById('cloudpages-manager');
-        if (panel) {
-            panel.classList.add('minimized');
-            window.CPM_STATE.isPanelOpen = false;
-        }
+        cpmClosePanel();
     });
 
     // Dark / Light mode toggle
@@ -3173,10 +3184,7 @@ function setupEventListeners(pageHookToken, appcoreToken) {
     // ---- v8: Keyboard shortcut - Escape closes panel ----
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
-        const panel = document.getElementById('cloudpages-manager');
-        if (!panel || panel.classList.contains('minimized')) return;
-        panel.classList.add('minimized');
-        window.CPM_STATE.isPanelOpen = false;
+        cpmClosePanel();
     });
 
     document.getElementById('cpm-recapture-tokens')?.addEventListener('click', () => {
@@ -4252,12 +4260,10 @@ function renderTable() {
     
     console.log('[CloudPage Maestro] Rendering table with', window.CPM_STATE.allAssets.length, 'assets');
     
-    // Preserve checkbox state before clearing table
-    const previouslyCheckedIds = new Set();
-    tbody.querySelectorAll('.page-select-checkbox:checked').forEach(cb => {
-        previouslyCheckedIds.add(cb.dataset.id);
-    });
-    
+    // Selection is tracked in window.CPM_STATE.selectedPages (the single source
+    // of truth) — no need to snapshot the DOM. Restore below reads from it, so
+    // clearing the model (cpmClearSelection) reliably leaves boxes unchecked.
+
     tbody.innerHTML = '';
     
     // Get all items (unfiltered) for calculating stats per page
@@ -4434,9 +4440,10 @@ function renderTable() {
         tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#9ca3af;">No items found</td></tr>';
     }
     
-    // Restore checkbox selections after rendering
+    // Restore checkbox selections after rendering, from the selection model
+    // (single source of truth). This also preserves selections across pages.
     tbody.querySelectorAll('.page-select-checkbox').forEach(cb => {
-        if (previouslyCheckedIds.has(cb.dataset.id)) {
+        if (window.CPM_STATE.selectedPages.has(cb.dataset.id)) {
             cb.checked = true;
         }
     });
@@ -5106,6 +5113,20 @@ async function exportAllToCSV() {
 }
 
 
+// Single source of truth for clearing the current selection after a batch
+// action. Clears the selectedPages model, unchecks every visible checkbox and
+// the select-all box, and refreshes the bulk-action bar. Every batch op (move,
+// publish, unpublish) calls this so checkboxes never linger checked after the
+// action completes — previously Move cleared the model but left the boxes
+// visibly ticked. See FIXES.md.
+function cpmClearSelection() {
+    if (window.CPM_STATE) window.CPM_STATE.selectedPages.clear();
+    const selectAll = document.getElementById('cpm-select-all');
+    if (selectAll) { selectAll.checked = false; selectAll.indeterminate = false; }
+    document.querySelectorAll('.page-select-checkbox').forEach(cb => { cb.checked = false; });
+    if (typeof updateBulkActions === 'function') updateBulkActions();
+}
+
 // Bulk unpublish - handles both landing pages and code resources
 async function bulkUnpublish(appcoreToken) {
     if (window.CPM_STATE.selectedPages.size === 0) return;
@@ -5166,14 +5187,10 @@ async function bulkUnpublish(appcoreToken) {
 
     hideBatchProgress();
     showNotification('Completed: ' + successCount + ' success, ' + failCount + ' failed. Click Refresh to update.', successCount > 0 ? 'success' : 'error');
-    
-    // Clear selection
-    window.CPM_STATE.selectedPages.clear();
-    const selectAll = document.getElementById('cpm-select-all');
-    if (selectAll) selectAll.checked = false;
-    document.querySelectorAll('.page-select-checkbox').forEach(cb => cb.checked = false);
-    updateBulkActions();
-    
+
+    // Reset checkboxes so the prior selection doesn't linger after the action
+    cpmClearSelection();
+
     // DO NOT auto-reload - user will click Refresh manually
 }
 
@@ -5237,14 +5254,10 @@ async function bulkPublish(appcoreToken) {
 
     hideBatchProgress();
     showNotification(`Completed: ${successCount} success, ${failCount} failed. Click Refresh to update.`, successCount > 0 ? 'success' : 'error');
-    
-    // Clear selection
-    window.CPM_STATE.selectedPages.clear();
-    const selectAllEl = document.getElementById('cpm-select-all');
-    if (selectAllEl) selectAllEl.checked = false;
-    document.querySelectorAll('.page-select-checkbox').forEach(cb => cb.checked = false);
-    updateBulkActions();
-    
+
+    // Reset checkboxes so the prior selection doesn't linger after the action
+    cpmClearSelection();
+
     // DO NOT auto-reload - user will click Refresh manually
 }
 
@@ -5826,8 +5839,8 @@ async function performBatchMove(selectedIds, targetFolderId, pageHookToken, fold
         showNotification(`Moved ${successCount} items, ${failCount} failed. Click Refresh to update.`, 'warning');
     }
 
-    window.CPM_STATE.selectedPages.clear();
-    updateBulkActions();
+    // Reset checkboxes too — clearing only the model left the boxes ticked.
+    cpmClearSelection();
 }
 
 // Batch move with folder picker
