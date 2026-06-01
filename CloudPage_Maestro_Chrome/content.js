@@ -535,6 +535,7 @@ const ICONS = {
     cloudUpload: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13V22"/><path d="M9 16L12 13L15 16"/><path d="M20 17.607C21.262 16.534 22 14.938 22 13.173C22 9.826 19.379 7.102 16.098 7.102C15.756 7.102 15.419 7.13 15.09 7.185C14.097 4.712 11.739 3 9 3C5.134 3 2 6.177 2 10.098C2 12.002 2.756 13.735 4 14.985"/></svg>',
     refresh: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.168 8A10.003 10.003 0 0012 2C6.477 2 2 6.477 2 12s4.477 10 10 10c4.478 0 8.268-2.943 9.542-7"/><path d="M17 8H21.4C21.7314 8 22 7.73137 22 7.4V3"/></svg>',
     download: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20H18"/><path class="download-arrow" d="M12 4V16M12 16L15.5 12.5M12 16L8.5 12.5"/></svg>',
+    editPencil: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.363 5.652l1.48-1.48a2 2 0 0 1 2.829 0l1.414 1.414a2 2 0 0 1 0 2.828l-1.48 1.48"/><path d="M14.363 5.652l-9.616 9.616a2 2 0 0 0-.578 1.238l-.298 2.94a1 1 0 0 0 1.103 1.102l2.94-.298a2 2 0 0 0 1.239-.578l9.615-9.616"/><path d="M14.363 5.652l4.243 4.242"/></svg>',
     eyeClosed: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3L21 21"/><path d="M10.584 10.587C10.2087 10.962 9.99778 11.4708 9.99756 12.0013C9.99733 12.5318 10.2078 13.0408 10.5828 13.416C10.9578 13.7913 11.4666 14.0022 11.9971 14.0024C12.5276 14.0027 13.0366 13.7922 13.412 13.4172"/><path d="M17.357 17.349C15.726 18.449 13.942 19 12 19C8.278 19 4.889 16.002 3 13.011C4.055 11.282 5.511 9.592 7.373 8.349"/><path d="M19.8 14.2C20.5 13.38 21.034 12.543 21.367 11.782C21.4998 11.474 21.5 11.128 21.367 10.82C20.1 8.181 16.688 4 12 4C11.341 4 10.696 4.079 10.066 4.232"/></svg>',
     cancel: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.758 17.243L12.001 12M17.244 6.757L12.001 12M12.001 12L6.758 6.757M12.001 12L17.244 17.243"/></svg>',
     copy: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.4 20H9.6C9.26863 20 9 19.7314 9 19.4V9.6C9 9.26863 9.26863 9 9.6 9H19.4C19.7314 9 20 9.26863 20 9.6V19.4C20 19.7314 19.7314 20 19.4 20Z"/><path d="M15 9V4.6C15 4.26863 14.7314 4 14.4 4H4.6C4.26863 4 4 4.26863 4 4.6V14.4C4 14.7314 4.26863 15 4.6 15H9"/></svg>',
@@ -802,6 +803,9 @@ function createMainUI(pageHookToken, appcoreToken) {
                 </button>
                 <button class="cpm-header-btn cpm-btn-neutral batch-move" id="cpm-batch-move" disabled title="Move selected">
                     ${ICONS.folder} <span class="cpm-btn-label">Move</span><span class="cpm-pill" id="cpm-move-count" aria-hidden="true"></span>
+                </button>
+                <button class="cpm-header-btn cpm-btn-neutral batch-edit-url" id="cpm-batch-edit-url" disabled title="Edit URL of selected landing pages">
+                    ${ICONS.editPencil} <span class="cpm-btn-label">Edit URL</span><span class="cpm-pill" id="cpm-edit-url-count" aria-hidden="true"></span>
                 </button>
                 <span class="cpm-header-divider" aria-hidden="true"></span>
                 <button class="cpm-header-btn cpm-btn-brand" id="cpm-refresh" title="Refresh">${ICONS.refresh} <span class="cpm-btn-label">Refresh</span></button>
@@ -3205,7 +3209,11 @@ function setupEventListeners(pageHookToken, appcoreToken) {
     document.getElementById('cpm-batch-move')?.addEventListener('click', () => {
         batchMoveDebug(pageHookToken);
     });
-    
+
+    document.getElementById('cpm-batch-edit-url')?.addEventListener('click', () => {
+        openEditUrlModal(appcoreToken);
+    });
+
     // Pagination (delegated)
     document.getElementById('cpm-pagination')?.addEventListener('click', (e) => {
         const pageBtn = e.target.closest('.cpm-page-btn');
@@ -4829,7 +4837,23 @@ function updateBulkActions() {
     if (batchMoveBtn) {
         batchMoveBtn.disabled = totalSelected === 0;
     }
-    
+
+    // Edit URL only applies to landing pages (the cloud-pages PUT endpoint is
+    // landing-pages/{id}; code resources don't have a URL/site-key pair).
+    const batchEditUrlBtn = document.getElementById('cpm-batch-edit-url');
+    const editUrlCountEl  = document.getElementById('cpm-edit-url-count');
+    let landingCount = 0;
+    document.querySelectorAll('.page-select-checkbox:checked').forEach(cb => {
+        if (cb.dataset.type === 'landing') landingCount++;
+    });
+    if (editUrlCountEl) {
+        editUrlCountEl.textContent = landingCount > 0 ? landingCount : '';
+        editUrlCountEl.classList.toggle('cpm-pill-visible', landingCount > 0);
+    }
+    if (batchEditUrlBtn) {
+        batchEditUrlBtn.disabled = landingCount === 0;
+    }
+
     if (bulkBar) bulkBar.style.display = totalSelected > 0 ? 'flex' : 'none';
 }
 
@@ -5846,13 +5870,396 @@ async function performBatchMove(selectedIds, targetFolderId, pageHookToken, fold
 // Batch move with folder picker
 async function batchMoveDebug(pageHookToken) {
     const selectedIds = Array.from(window.CPM_STATE.selectedPages);
-    
+
     if (selectedIds.length === 0) {
         showNotification('Please select items to move', 'warning');
         return;
     }
-    
+
     showFolderPickerModal(pageHookToken, selectedIds);
+}
+
+// ============================================================
+// Edit URL (batch) — change domain and/or site key for one or
+// many landing pages in a spreadsheet-style modal, then offer to
+// republish the ones that were originally published. Mirrors
+// SFMC's native Edit URL flow but across N rows at once.
+// ============================================================
+
+// Wraps the background MAKE_REQUEST messaging in a Promise so we
+// can use the cookie-credentialed + CSRF-token fetch the rest of
+// CPM already uses for cloudpages writes.
+function cpmEuRequest(config) {
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ type: 'MAKE_REQUEST', config }, (r) => {
+            if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
+            if (r && r.success) return resolve(r.data);
+            reject(new Error(r ? r.error : 'Request failed'));
+        });
+    });
+}
+
+// GET /cloudpages/domains → [{ name, hasSsl, isPrivate }, ...]
+async function cpmEuFetchDomains(appcoreToken) {
+    const stack = getStack();
+    const url = `https://cloud-pages.${stack}.marketingcloudapps.com/fuelapi/internal/v2/cloudpages/domains`;
+    return cpmEuRequest({ url, method: 'GET', headers: { 'Accept': 'application/json', 'X-CSRF-Token': appcoreToken } });
+}
+
+// GET /landing-pages/{id} → full LP record (key, domain, categoryId, name, requiresSsl, status, ...)
+async function cpmEuFetchDetail(landingPageId, appcoreToken) {
+    const stack = getStack();
+    const url = `https://cloud-pages.${stack}.marketingcloudapps.com/fuelapi/internal/v2/cloudpages/landing-pages/${landingPageId}`;
+    return cpmEuRequest({ url, method: 'GET', headers: { 'Accept': 'application/json', 'X-CSRF-Token': appcoreToken } });
+}
+
+// GET /SiteKeyPageKey/Validate?domain=X&siteKey=Y → [] when available, non-empty when in use.
+async function cpmEuValidate(domain, siteKey, appcoreToken) {
+    const stack = getStack();
+    const url = `https://cloud-pages.${stack}.marketingcloudapps.com/fuelapi/internal/v1/cloudpages/SiteKeyPageKey/Validate?domain=${encodeURIComponent(domain)}&siteKey=${encodeURIComponent(siteKey)}`;
+    return cpmEuRequest({ url, method: 'GET', headers: { 'Accept': 'application/json', 'X-CSRF-Token': appcoreToken } });
+}
+
+// PUT /landing-pages/{id} with the URL change payload.
+async function cpmEuSave(detail, appcoreToken) {
+    const stack = getStack();
+    const url = `https://cloud-pages.${stack}.marketingcloudapps.com/fuelapi/internal/v2/cloudpages/landing-pages/${detail.landingPageId}`;
+    const body = {
+        landingPageId: detail.landingPageId,
+        categoryId:    detail.categoryId,
+        name:          detail.name,
+        key:           detail.key,
+        domain:        detail.domain,
+        requiresSsl:   detail.requiresSsl !== false
+    };
+    return cpmEuRequest({
+        url, method: 'PUT',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': appcoreToken },
+        body: JSON.stringify(body)
+    });
+}
+
+// Main modal opener — runs the full flow.
+async function openEditUrlModal(appcoreToken) {
+    // Only landing pages are eligible (code resources use a different endpoint).
+    const selectedIds = Array.from(window.CPM_STATE.selectedPages || []);
+    const allAssets   = window.CPM_STATE.allAssets || [];
+    const selectedLPs = allAssets.filter(a =>
+        selectedIds.includes(String(a.id)) &&
+        a.assetType?.name?.toLowerCase() === 'landingpage' &&
+        a.siteId
+    );
+    if (!selectedLPs.length) {
+        showNotification('Select at least one landing page to edit', 'warning');
+        return;
+    }
+
+    // Theme tokens (same approach as showFolderPickerModal).
+    const dk = isDarkMode();
+    const c = {
+        bg:        dk ? '#161b22' : '#ffffff',
+        border:    dk ? '#30363d' : '#e5e7eb',
+        text:      dk ? '#e6edf3' : '#111827',
+        sub:       dk ? '#8b949e' : '#6b7280',
+        inputBg:   dk ? '#0d1117' : '#ffffff',
+        inputBd:   dk ? '#30363d' : '#d1d5db',
+        rowBg:     dk ? '#0d1117' : '#f9fafb',
+        accent:    '#0176d3',
+        accentTxt: '#ffffff',
+        danger:    dk ? '#f85149' : '#b91c1c'
+    };
+
+    // Build overlay + modal shell with loading state.
+    const overlay = document.createElement('div');
+    overlay.id = 'cpm-edit-url-overlay';
+    overlay.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,${dk ? '0.7' : '0.5'}); display:flex; align-items:center; justify-content:center; z-index:999999;`;
+    const modal = document.createElement('div');
+    modal.style.cssText = `background:${c.bg}; border:1px solid ${c.border}; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,${dk ? '0.6' : '0.3'}); width:880px; max-width:95vw; max-height:88vh; display:flex; flex-direction:column;`;
+    modal.innerHTML = `
+        <div style="padding:20px 24px; border-bottom:1px solid ${c.border};">
+            <h2 style="margin:0; font-size:18px; font-weight:600; color:${c.text};">
+                Edit URL · ${selectedLPs.length} page${selectedLPs.length > 1 ? 's' : ''}
+            </h2>
+            <p style="margin:6px 0 0; font-size:13px; color:${c.sub};">
+                Change the domain and/or site key. Published pages will be unpublished first, with a chance to republish at the end.
+            </p>
+        </div>
+        <div id="cpm-eu-bulkbar" style="display:none; padding:12px 24px; border-bottom:1px solid ${c.border}; gap:10px; align-items:center;">
+            <label style="font-size:13px; color:${c.sub};">Set domain for all:</label>
+            <select id="cpm-eu-bulk-domain" style="background:${c.inputBg}; border:1px solid ${c.inputBd}; border-radius:6px; padding:6px 8px; font-size:13px; color:${c.text};"></select>
+            <button id="cpm-eu-bulk-apply" type="button" style="background:transparent; border:1px solid ${c.inputBd}; color:${c.text}; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">Apply to all rows</button>
+        </div>
+        <div id="cpm-eu-body" style="padding:16px 24px; overflow:auto; flex:1;">
+            <div id="cpm-eu-loading" style="color:${c.sub}; font-size:13px; padding:20px 0; text-align:center;">Loading landing page details and domains…</div>
+            <div id="cpm-eu-rows" style="display:none;"></div>
+        </div>
+        <div style="padding:14px 24px; border-top:1px solid ${c.border}; display:flex; justify-content:flex-end; gap:10px;">
+            <button id="cpm-eu-cancel" type="button" style="background:transparent; border:1px solid ${c.inputBd}; color:${c.text}; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:13px;">Cancel</button>
+            <button id="cpm-eu-apply" type="button" disabled style="background:${c.accent}; border:0; color:${c.accentTxt}; padding:8px 18px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; opacity:0.5;">Apply changes</button>
+        </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    const closeModal = () => { try { overlay.remove(); } catch (_) {} };
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    modal.querySelector('#cpm-eu-cancel').addEventListener('click', closeModal);
+
+    // Fetch domain list + per-LP detail in parallel.
+    let domains = [];
+    let rowState = []; // per-LP: { landingPageId, name, original{...}, current{key,domain}, status, wasPublished, rowItemId } or { error }
+    try {
+        const [domainsResp, ...detailResps] = await Promise.all([
+            cpmEuFetchDomains(appcoreToken).catch(e => ({ _err: e })),
+            ...selectedLPs.map(lp => cpmEuFetchDetail(lp.siteId, appcoreToken).catch(e => ({ _err: e })))
+        ]);
+        if (domainsResp && domainsResp._err) throw domainsResp._err;
+        domains = Array.isArray(domainsResp) ? domainsResp : [];
+        rowState = selectedLPs.map((lp, i) => {
+            const d = detailResps[i];
+            if (!d || d._err) {
+                return { landingPageId: lp.siteId, name: lp.name, error: d && d._err ? d._err.message : 'Failed to load detail' };
+            }
+            const status = (d.status || lp.publishedState || 'Draft').toString();
+            const wasPublished = /^(Published|Scheduled)$/i.test(status);
+            return {
+                landingPageId: d.landingPageId,
+                rowItemId:     String(lp.id),
+                name:          d.name || lp.name,
+                original:      { key: d.key, domain: d.domain, categoryId: d.categoryId, requiresSsl: d.requiresSsl, name: d.name },
+                current:       { key: d.key, domain: d.domain },
+                status, wasPublished
+            };
+        });
+    } catch (e) {
+        modal.querySelector('#cpm-eu-loading').innerHTML = `<span style="color:${c.danger}">Failed to load: ${escapeHtml(e.message || String(e))}</span>`;
+        return;
+    }
+    if (!domains.length) {
+        modal.querySelector('#cpm-eu-loading').innerHTML = `<span style="color:${c.danger}">No publishable domains configured in this BU.</span>`;
+        return;
+    }
+
+    // Populate the bulk-domain selector.
+    const bulkSel = modal.querySelector('#cpm-eu-bulk-domain');
+    domains.forEach(d => {
+        const o = document.createElement('option');
+        o.value = d.name; o.textContent = d.name;
+        bulkSel.appendChild(o);
+    });
+    modal.querySelector('#cpm-eu-bulkbar').style.display = selectedLPs.length > 1 ? 'flex' : 'none';
+
+    // Row renderer.
+    const buildPreview = (domain, key) => (key && domain) ? `https://${domain}/${key}` : '—';
+    const renderRow = (st, idx) => {
+        if (st.error) {
+            return `<div style="padding:10px 12px; background:${c.rowBg}; border:1px solid ${c.border}; border-radius:8px; margin-bottom:8px; color:${c.danger}; font-size:13px;">
+                <strong>${escapeHtml(st.name)}</strong> — failed to load: ${escapeHtml(st.error)}
+            </div>`;
+        }
+        const opts = domains.map(d => `<option value="${escapeHtml(d.name)}"${d.name === st.current.domain ? ' selected' : ''}>${escapeHtml(d.name)}</option>`).join('');
+        const statusBadge = st.wasPublished
+            ? `<span style="font-size:10px; padding:2px 7px; border-radius:10px; background:rgba(245,158,11,0.18); color:#b45309; text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap;">${escapeHtml(st.status)} · will be unpublished</span>`
+            : `<span style="font-size:10px; padding:2px 7px; border-radius:10px; background:rgba(148,163,184,0.15); color:${c.sub}; text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap;">${escapeHtml(st.status)}</span>`;
+        return `<div data-row="${idx}" style="padding:10px 12px; background:${c.rowBg}; border:1px solid ${c.border}; border-radius:8px; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:8px; align-items:flex-start;">
+                <div style="font-weight:600; font-size:13px; color:${c.text}; word-break:break-word; flex:1;">${escapeHtml(st.name)}</div>
+                ${statusBadge}
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1.4fr; gap:10px;">
+                <div>
+                    <label style="display:block; font-size:10px; color:${c.sub}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Domain</label>
+                    <select data-field="domain" style="width:100%; background:${c.inputBg}; border:1px solid ${c.inputBd}; border-radius:6px; padding:7px 8px; font-size:13px; color:${c.text};">${opts}</select>
+                </div>
+                <div>
+                    <label style="display:block; font-size:10px; color:${c.sub}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Site Key</label>
+                    <input data-field="key" type="text" value="${escapeHtml(st.current.key)}" style="width:100%; background:${c.inputBg}; border:1px solid ${c.inputBd}; border-radius:6px; padding:7px 8px; font-size:13px; color:${c.text}; font-family:'JetBrains Mono',ui-monospace,monospace;" />
+                </div>
+            </div>
+            <div data-preview style="font-size:11px; color:${c.sub}; margin-top:8px; font-family:'JetBrains Mono',ui-monospace,monospace; word-break:break-all;">${escapeHtml(buildPreview(st.current.domain, st.current.key))}</div>
+            <div data-error style="font-size:11px; color:${c.danger}; margin-top:6px; display:none;"></div>
+        </div>`;
+    };
+
+    const rowsEl  = modal.querySelector('#cpm-eu-rows');
+    const applyBtn = modal.querySelector('#cpm-eu-apply');
+    modal.querySelector('#cpm-eu-loading').style.display = 'none';
+    rowsEl.style.display = 'block';
+    rowsEl.innerHTML = rowState.map((st, i) => renderRow(st, i)).join('');
+
+    const refreshApplyState = () => {
+        const anyDirty = rowState.some(st => !st.error &&
+            (st.current.key !== st.original.key || st.current.domain !== st.original.domain));
+        applyBtn.disabled = !anyDirty;
+        applyBtn.style.opacity = anyDirty ? '1' : '0.5';
+        applyBtn.style.cursor  = anyDirty ? 'pointer' : 'default';
+    };
+
+    // Live URL preview + dirty tracking. Single delegated listener.
+    rowsEl.addEventListener('input', (e) => {
+        const rowDiv = e.target.closest('[data-row]');
+        if (!rowDiv) return;
+        const idx = parseInt(rowDiv.dataset.row, 10);
+        if (e.target.dataset.field === 'key')    rowState[idx].current.key    = e.target.value.trim();
+        if (e.target.dataset.field === 'domain') rowState[idx].current.domain = e.target.value;
+        rowDiv.querySelector('[data-preview]').textContent = buildPreview(rowState[idx].current.domain, rowState[idx].current.key);
+        rowDiv.querySelector('[data-error]').style.display = 'none';
+        refreshApplyState();
+    });
+    rowsEl.addEventListener('change', (e) => {
+        if (e.target.dataset.field !== 'domain') return;
+        const rowDiv = e.target.closest('[data-row]');
+        const idx = parseInt(rowDiv.dataset.row, 10);
+        rowState[idx].current.domain = e.target.value;
+        rowDiv.querySelector('[data-preview]').textContent = buildPreview(rowState[idx].current.domain, rowState[idx].current.key);
+        refreshApplyState();
+    });
+
+    // "Set domain for all" bulk control.
+    modal.querySelector('#cpm-eu-bulk-apply').addEventListener('click', () => {
+        const d = bulkSel.value;
+        rowState.forEach((st, idx) => {
+            if (st.error) return;
+            st.current.domain = d;
+            const rowDiv = rowsEl.querySelector(`[data-row="${idx}"]`);
+            if (rowDiv) {
+                rowDiv.querySelector('select[data-field="domain"]').value = d;
+                rowDiv.querySelector('[data-preview]').textContent = buildPreview(d, st.current.key);
+            }
+        });
+        refreshApplyState();
+    });
+
+    // Apply changes.
+    applyBtn.addEventListener('click', async () => {
+        applyBtn.disabled = true; applyBtn.style.opacity = '0.5';
+        modal.querySelector('#cpm-eu-cancel').disabled = true;
+
+        const dirty = rowState.filter(st => !st.error &&
+            (st.current.key !== st.original.key || st.current.domain !== st.original.domain));
+        if (!dirty.length) { applyBtn.disabled = false; return; }
+
+        // Validate dirty rows in parallel. SiteKeyPageKey/Validate returns [] when available.
+        const checks = await Promise.all(dirty.map(async (st) => {
+            try {
+                const arr = await cpmEuValidate(st.current.domain, st.current.key, appcoreToken);
+                return { st, conflict: Array.isArray(arr) && arr.length > 0 };
+            } catch (e) {
+                return { st, conflict: false, error: e.message };
+            }
+        }));
+        const conflicts = checks.filter(r => r.conflict);
+        if (conflicts.length) {
+            conflicts.forEach(({ st }) => {
+                const idx = rowState.indexOf(st);
+                const rowDiv = rowsEl.querySelector(`[data-row="${idx}"]`);
+                const err = rowDiv && rowDiv.querySelector('[data-error]');
+                if (err) {
+                    err.textContent = 'That domain + site key combo is already in use.';
+                    err.style.display = 'block';
+                }
+            });
+            applyBtn.disabled = false; applyBtn.style.opacity = '1';
+            modal.querySelector('#cpm-eu-cancel').disabled = false;
+            return;
+        }
+
+        // Execute. Sequential to keep gentle on SFMC and to keep the
+        // per-LP order (unpublish then PUT) intact.
+        showBatchProgress(0, dirty.length, 'Updating URL');
+        let done = 0, failed = 0;
+        const updated = [];
+        for (const st of dirty) {
+            try {
+                if (st.wasPublished) {
+                    try { await unpublishPage(st.landingPageId, appcoreToken); } catch (_) { /* may already be draft */ }
+                }
+                const detail = {
+                    landingPageId: st.landingPageId,
+                    categoryId:    st.original.categoryId,
+                    name:          st.original.name,
+                    key:           st.current.key,
+                    domain:        st.current.domain,
+                    requiresSsl:   st.original.requiresSsl
+                };
+                const resp = await cpmEuSave(detail, appcoreToken);
+                updated.push({ st, resp });
+                // Patch the in-memory row so the next render shows the new URL.
+                const asset = (window.CPM_STATE.allAssets || []).find(a => String(a.id) === st.rowItemId);
+                if (asset && resp) {
+                    if (resp.url)    asset.url    = resp.url;
+                    if (resp.status) asset.publishedState = resp.status;
+                }
+            } catch (e) {
+                failed++;
+                console.error('[CloudPage Maestro] URL save failed for', st.name, e);
+            } finally {
+                done++;
+                showBatchProgress(done, dirty.length, 'Updating URL');
+            }
+        }
+        hideBatchProgress();
+
+        if (failed > 0) {
+            showNotification(`Updated ${updated.length}, ${failed} failed.`, failed === dirty.length ? 'error' : 'warning');
+        } else {
+            showNotification(`Updated ${updated.length} URL${updated.length > 1 ? 's' : ''}.`, 'success');
+        }
+
+        // Offer to republish anything we had to unpublish.
+        const toRepublish = updated.filter(u => u.st.wasPublished).map(u => u.st);
+        closeModal();
+        // Selection has been acted on — clear it so checkboxes don't linger
+        // after refresh (same rule we already enforce for publish/unpublish/move).
+        if (typeof cpmClearSelection === 'function') cpmClearSelection();
+        if (toRepublish.length) await offerRepublishAfterEdit(toRepublish, appcoreToken);
+        // Auto-refresh the list so the new URLs (and any status changes) show
+        // immediately — otherwise the rendered rows still point at stale URLs.
+        document.getElementById('cpm-refresh')?.click();
+    });
+}
+
+// Small themed confirm modal: "Republish N pages?" after the URL edit.
+async function offerRepublishAfterEdit(rows, appcoreToken) {
+    return new Promise((resolve) => {
+        const dk = isDarkMode();
+        const c = {
+            bg:      dk ? '#161b22' : '#ffffff',
+            border:  dk ? '#30363d' : '#e5e7eb',
+            text:    dk ? '#e6edf3' : '#111827',
+            sub:     dk ? '#8b949e' : '#6b7280',
+            inputBd: dk ? '#30363d' : '#d1d5db'
+        };
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `position:fixed; inset:0; background:rgba(0,0,0,${dk ? '0.7' : '0.5'}); display:flex; align-items:center; justify-content:center; z-index:999999;`;
+        const m = document.createElement('div');
+        m.style.cssText = `background:${c.bg}; border:1px solid ${c.border}; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,${dk ? '0.6' : '0.3'}); padding:24px; width:480px; max-width:92vw;`;
+        m.innerHTML = `
+            <h2 style="margin:0 0 8px; font-size:17px; font-weight:600; color:${c.text};">Republish ${rows.length} page${rows.length > 1 ? 's' : ''}?</h2>
+            <p style="margin:0; font-size:13px; color:${c.sub};">These pages were unpublished so their URL could be changed. Republish them now with the new URL?</p>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button id="cpm-eu-rp-no"  type="button" style="background:transparent; border:1px solid ${c.inputBd}; color:${c.text}; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:13px;">Leave as Draft</button>
+                <button id="cpm-eu-rp-yes" type="button" style="background:#0176d3; border:0; color:#ffffff; padding:8px 18px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Republish</button>
+            </div>
+        `;
+        overlay.appendChild(m); document.body.appendChild(overlay);
+        const done = () => { try { overlay.remove(); } catch (_) {} resolve(); };
+        m.querySelector('#cpm-eu-rp-no').addEventListener('click', done);
+        m.querySelector('#cpm-eu-rp-yes').addEventListener('click', async () => {
+            overlay.remove();
+            showBatchProgress(0, rows.length, 'Republishing');
+            let d = 0, f = 0;
+            for (const st of rows) {
+                try { await publishPage(st.landingPageId, appcoreToken); }
+                catch (e) { f++; console.error('[CloudPage Maestro] Republish failed for', st.name, e); }
+                finally { d++; showBatchProgress(d, rows.length, 'Republishing'); }
+            }
+            hideBatchProgress();
+            if (f > 0) showNotification(`Republished ${rows.length - f}, ${f} failed.`, f === rows.length ? 'error' : 'warning');
+            else       showNotification(`Republished ${rows.length} page${rows.length > 1 ? 's' : ''}.`, 'success');
+            resolve();
+        });
+    });
 }
 
 // Universal unpublish - works for both landing pages and code resources.
