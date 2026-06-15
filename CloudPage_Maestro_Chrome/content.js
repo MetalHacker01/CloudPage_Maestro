@@ -1933,6 +1933,16 @@ function addStyles() {
             background: #f3f3f3;
         }
 
+        /* Exact-name match row — subtle tinted background + a brand-color
+           accent stripe on the left so the "perfect match" is unmissable. */
+        .cpm-table tbody tr.cpm-row-exact-match {
+            background: #eaf5fe !important;
+            box-shadow: inset 3px 0 0 #0176d3;
+        }
+        .cpm-table tbody tr.cpm-row-exact-match:hover {
+            background: #d8ecfd !important;
+        }
+
         /* ID Column - SLDS link */
         .cpm-id {
             font-family: monospace;
@@ -2836,6 +2846,14 @@ function addStyles() {
         }
         #cloudpages-manager.cpm-dark .cpm-table tbody tr:hover {
             background: #1c2128 !important;
+        }
+        /* Dark theme exact-match row + pill */
+        #cloudpages-manager.cpm-dark .cpm-table tbody tr.cpm-row-exact-match {
+            background: #14283f !important;
+            box-shadow: inset 3px 0 0 #4f8ef7;
+        }
+        #cloudpages-manager.cpm-dark .cpm-table tbody tr.cpm-row-exact-match:hover {
+            background: #1b324e !important;
         }
         #cloudpages-manager.cpm-dark .cpm-table tbody td {
             border-color: #21262d !important;
@@ -4354,7 +4372,16 @@ function renderTable() {
         const isLanding = item.assetType?.name?.toLowerCase() === 'landingpage';
         const itemType = isLanding ? 'landing' : 'asset';
         row.setAttribute('data-item-type', itemType);
-        
+
+        // SFMC's search is a fuzzy "contains" across name + content + description,
+        // so the asset whose NAME matches your query exactly can land below noisy
+        // partial-content matches. Highlight the exact-name match (case-insensitive)
+        // so it never gets lost in the results.
+        const _searchQ = (window.CPM_STATE.currentSearchTerm || '').trim();
+        const isExactMatch = !!_searchQ && (item.name || '').toLowerCase() === _searchQ.toLowerCase();
+        if (isExactMatch) row.classList.add('cpm-row-exact-match');
+
+
         // Normalize status - could be:
         // - Direct string like 'Published', 'Unpublished', 'Draft' (from enrichment)
         // - Object like {status: 'Published'} (from CloudPages API)
