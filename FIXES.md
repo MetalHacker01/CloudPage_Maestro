@@ -4,6 +4,26 @@ A chronological log of bugs and their working fixes. **Read this before touching
 
 ---
 
+## 2026-06-15 — Single-row Unpublish on enriched landing pages 404s as a code resource
+
+**Problem:** Clicking Unpublish on a landing page (from the row action button, after the row had been async-enriched) POSTed to `/code-resources/{siteId}/unpublish` and returned `HTTP 404: Resource does not exist (30003)`. Batch Unpublish on the same row worked.
+
+**Root cause:** Two render paths used different `itemType` conventions for the `data-type` attribute on action buttons:
+- Initial render (`renderTable`, ~line 4348): `const itemType = isLanding ? 'landing' : 'asset';`
+- Post-enrichment patch (`patchEnrichedRow`, ~line 3805): `const itemType = item.assetType?.name?.toLowerCase() || 'landingpage';`
+
+`patchEnrichedRow` rewrites `cells[8].innerHTML` (the actions cell) AFTER async enrichment, so the unpublish button ended up with `data-type="landingpage"` instead of `"landing"`. The dispatch in the action-button click handler checks `if (type === 'landing') unpublishPage(...) else unpublishCodeResource(...)` — `'landingpage' !== 'landing'`, so it fell to the code-resource branch, fetched `/sites?siteAssetId={id}`, used the returned `siteId` as if it were a `codeResourceId`, and POSTed `/code-resources/{siteId}/unpublish` → 404. Batch Unpublish was unaffected because it reads `cb.dataset.type` from the checkbox, which `patchEnrichedRow` doesn't rewrite.
+
+**Fix:** Make `patchEnrichedRow` use the same convention as the initial render — `isLanding ? 'landing' : 'asset'` — so the rewritten action buttons keep the right `data-type` value the dispatch expects.
+
+**Verified by:** TBD — user testing required. Search for a landing page, wait for enrichment, click the row's Unpublish button. Expect: `POST /landing-pages/{siteId}/unpublish` (200), not `/code-resources/...` (404).
+
+**Never regress to:**
+- **A second `itemType` formula in any new render/patch helper.** There is exactly one mapping (`isLanding ? 'landing' : 'asset'`) and the dispatch (`type === 'landing'`) depends on it. Any new spot that writes `data-type` on a publish/unpublish/download/etc. button must use the same expression, or you reintroduce this 404. If you want a different convention, change the dispatch too.
+- **Reading `assetType.name?.toLowerCase()` directly into a button `data-type` attribute.** That convention is for matching against the asset-type enum (e.g. `'landingpage'`, `'jscoderesource'`) — not for the dispatch shortcut. Mixing the two is exactly what caused this bug.
+
+---
+
 ## 2026-06-01 — Edit URL (batch) — change domain + site key for many landing pages in one modal
 
 **What it does:** New batch action. Select any number of landing-page rows → "Edit URL" → spreadsheet-style modal with one editable row per LP (Domain dropdown + Site Key input + live URL preview). Edit individually or use "Set domain for all". Apply runs (in sequence per LP): unpublish-if-needed → SiteKeyPageKey/Validate → PUT landing-pages/{id}. After the loop, originally-published pages get a "Republish N pages?" prompt that fires the existing publishPage in a loop with progress. Selection is cleared via `cpmClearSelection()` (same rule the other batch actions use, see 2026-05-27 entry) and the list auto-refreshes by programmatically clicking `#cpm-refresh` so rendered rows reflect the new URLs/status immediately.

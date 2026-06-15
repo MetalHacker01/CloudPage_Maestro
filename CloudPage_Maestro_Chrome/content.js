@@ -3802,7 +3802,13 @@ function patchEnrichedRow(item) {
         ? (item.status?.status || 'Draft')
         : (item.status || 'Draft');
     const itemUrl = item.url || null;
-    const itemType = item.assetType?.name?.toLowerCase() || 'landingpage';
+    // Must match the initial-render convention from renderTable: 'landing' for
+    // landing pages, 'asset' for code resources. The action-button click handler
+    // dispatches via `type === 'landing'`, so writing the full assetType name
+    // here (e.g. 'landingpage') silently routes LP unpublish/publish through
+    // the code-resource endpoint and 404s. See FIXES.md.
+    const isLanding = item.assetType?.name?.toLowerCase() === 'landingpage';
+    const itemType = isLanding ? 'landing' : 'asset';
     const hasSiteId = item.siteId !== null && item.siteId !== undefined;
     const canPublish = hasSiteId && status !== 'Published';
     const canUnpublish = hasSiteId && status === 'Published';
