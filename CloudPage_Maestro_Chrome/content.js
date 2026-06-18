@@ -123,6 +123,9 @@ function cpmClosePanel() {
     const toggle = document.getElementById('cpm-toggle-btn');
     if (toggle) toggle.classList.remove('panel-open');
     cpmAnnouncePanelState(false);
+    // Closing the panel resets the working selection — re-opening should
+    // feel fresh, not show ghost checkboxes from the previous session.
+    if (typeof cpmClearSelection === 'function') cpmClearSelection();
 }
 
 function cpmSetupPeerCoordination() {
@@ -3088,6 +3091,10 @@ function setupEventListeners(pageHookToken, appcoreToken) {
     
     // Refresh button - re-fetch tokens so badges reflect current state, then load data
     document.getElementById('cpm-refresh')?.addEventListener('click', () => {
+        // Refresh = the visible list is about to be rebuilt from scratch,
+        // so wipe selection too. Otherwise old item IDs linger in the bulk
+        // action counts and Move/Publish/Unpublish silently target ghosts.
+        if (typeof cpmClearSelection === 'function') cpmClearSelection();
         chrome.runtime.sendMessage({ type: 'GET_TOKENS' }, (response) => {
             if (response && response.success && response.tokens) {
                 const ph = response.tokens.pageHookToken;
@@ -3329,6 +3336,10 @@ function setupEventListeners(pageHookToken, appcoreToken) {
 
 // Enhanced search with proper query endpoint - LOAD ONE PAGE AT A TIME
 async function performEnhancedSearch(searchTerm) {
+    // Any context change (search, refresh, close) clears selection so the
+    // bulk-action counts don't carry stale items from a previous result set
+    // into a different visible list. See FIXES.md.
+    if (typeof cpmClearSelection === 'function') cpmClearSelection();
     if (!searchTerm.trim()) {
         // Reset to normal 100-items-per-page mode
         window.CPM_STATE.isSearchMode = false;

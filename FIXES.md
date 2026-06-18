@@ -4,6 +4,27 @@ A chronological log of bugs and their working fixes. **Read this before touching
 
 ---
 
+## 2026-06-18 — Selection persisted across search / refresh / close, leaving ghost checkboxes
+
+**Problem:** After a batch action the checkboxes cleared (the 2026-05-27 rule was holding), but **new context changes did not** — a user could search, then search for something else, then refresh, and the bulk-action bar still showed N items selected from the first list. Move in particular could end up acting on hidden ghost IDs because `selectedPages` carried items that no longer existed on screen.
+
+**Root cause:** `cpmClearSelection()` was only called at the end of the four batch actions (publish / unpublish / move / edit-url). Every other context-change entry point — the search trigger, the Refresh button, the panel close — left `window.CPM_STATE.selectedPages` untouched. Since restore-on-render reads from that Set (the single source of truth introduced on 2026-05-27), any subsequent table render re-checked every row whose id matched a stale entry, and the bulk-action bar kept counting those entries even when the rows were not visible.
+
+**Fix:** Call `cpmClearSelection()` at three more entry points:
+1. **`performEnhancedSearch`** — at the very top, so a new search starts with a clean selection regardless of empty/non-empty query.
+2. **Refresh button click handler** — before re-fetching tokens and reloading, since the visible list is about to be rebuilt from scratch.
+3. **`cpmClosePanel`** — at the end, so re-opening the panel is a fresh session, not a continuation with ghost checkboxes.
+
+The four batch actions still clear at their end; this change adds the context-change clears that were missing.
+
+**Verified by:** TBD — user testing required. Select rows → search a new term → confirm 0 selected in the bulk bar. Select rows → click Refresh → confirm 0 selected. Select rows → close the panel via X → re-open → confirm 0 selected.
+
+**Never regress to:**
+- **Adding a new entry point that swaps the visible list (new filter mode, new view, new data source) without calling `cpmClearSelection()`.** Selection is per-list context; any time the list changes wholesale, selection must reset. The existing entry points are: batch action ends, performEnhancedSearch, Refresh button, cpmClosePanel. Add new ones to that list if you introduce them.
+- **Trying to filter `selectedPages` to "only currently-visible IDs".** That sounds clever but breaks pagination (selections on page 1 must survive switching to page 2 and back). Whole-list-change → full clear is the simpler rule.
+
+---
+
 ## 2026-06-15 — Single-row Unpublish on enriched landing pages 404s as a code resource
 
 **Problem:** Clicking Unpublish on a landing page (from the row action button, after the row had been async-enriched) POSTed to `/code-resources/{siteId}/unpublish` and returned `HTTP 404: Resource does not exist (30003)`. Batch Unpublish on the same row worked.
